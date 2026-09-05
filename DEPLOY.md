@@ -15,6 +15,9 @@ no card. Whole deploy is ~5 minutes.
 ```js
 SHEET_ID: '',                              // optional; "" = uses the bound sheet
 ADMIN_EMAILS: ['you@yourschool.com'],      // <- change this: these emails become teachers
+EMAIL_FROM_NAME: 'CEE Mock Portal',
+EMAIL_REPLY_TO: 'support@cee-notes.cprecnepal.org.np',  // reply-to address for all outgoing mails
+WEB_APP_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',  // paste your /exec URL here
 EMAIL_ENABLED: true,
 EMAIL_FEEDBACK: true,                      // per-attempt result email to the student
 EMAIL_ADMIN_NOTIFY: true,                  // "new registration" note to teachers
