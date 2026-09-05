@@ -469,10 +469,16 @@ Phy,P1,SI unit of force?,,,""></textarea>
 /*__INCLUDES__*/
 (function () {
 'use strict';
-/* google.script.run only exists inside HTML served by the Apps Script web app.
- *  A plain copy (GitHub Pages, a local file) has no server to talk to, so bind
- *  lazily and tell the visitor where the real portal is instead of freezing. */
-var RUN = (typeof google !== 'undefined' && google.script.run) ? google.script.run : null;
+/* google.script.run only exists inside HTML served by the Apps Script web app, and the
+ *  framework installs it in this iframe - which can land a beat after this script runs.
+ *  So resolve it lazily, and only call the page a static copy after a grace period.
+ *  A parse-time check would be enough to hide a perfectly good deployment. */
+var RUN = null;
+function runner_() {
+  if (!RUN && typeof google !== 'undefined' && google.script.run) RUN = google.script.run;
+  return RUN;
+}
+function hasServer() { return !!runner_(); }
 var LS = 'cee_state_v1';
 var S = { token: '', user: null, dev: '', paper: null, ans: {}, mk: {}, cur: 0,
   started: 0, minutes: 0, timer: null, pending: 0, bank: { size: 0 }, syllabus: null,
@@ -498,7 +504,9 @@ function api(name) {
     var ok = function (r) { if (dead) return; clearTimeout(t); res(r); };
     var bad = function (e) { if (dead) return; clearTimeout(t); rej(e); };
     try {
-      var runner = RUN.withSuccessHandler(ok).withFailureHandler(bad);
+      var r = runner_();
+      if (!r) { rej(new Error('This copy of the portal is not connected to Apps Script - open it from the deployment URL (…/exec).')); return; }
+      var runner = r.withSuccessHandler(ok).withFailureHandler(bad);
       runner[name].apply(runner, args);
     } catch (err) { clearTimeout(t); rej(err); }
   });
@@ -1504,7 +1512,17 @@ function offlineNotice() {
 }
 
 function boot() {
-  if (!RUN) { offlineNotice(); return; }
+  if (hasServer()) { startApp(); return; }
+  var tries = 0;
+  var wait = function () {
+    if (hasServer()) { startApp(); return; }
+    if (++tries < 20) { setTimeout(wait, 100); return; }   // ~2 s, then it really is offline
+    offlineNotice();
+  };
+  wait();
+}
+
+function startApp() {
   var sl = $('supportLine');
   if (sl && sl.innerHTML.indexOf('__SUPPORT') >= 0) sl.className = 'hidden';
   load();

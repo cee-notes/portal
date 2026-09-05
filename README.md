@@ -50,8 +50,8 @@ Usual loop: edit `Code.gs` / `index.html` → `node tools/build.js` → paste
 | 12 | micro-syllabus topic codes (Bio Z1–Z9/B1–B6, C1–C7, P1–P8, M1–M9) | `SYLLABUS`, `topicList`, filters in `apiStartMock_` | `test.js` §(12), UI picker tests |
 | — | `LockService.getScriptLock()` on every read-modify-write, row-cell updates only, `FALLBACK_BANK` (8) + seeded default bank (40) | `withLock_`, `updateRow_`, `maybeSeed_`, `FALLBACK_BANK` | `test.js` §Concurrency, §fallback |
 
-`bash tools/run.sh` runs all of it: **91 checks, all passing** (57 backend, 7 single-file,
-27 real-DOM UI). The UI tests load the actual `index.html` in jsdom with `google.script.run`
+`bash tools/run.sh` runs all of it: **92 checks, all passing** (57 backend, 7 single-file,
+28 real-DOM UI). The UI tests load the actual `index.html` in jsdom with `google.script.run`
 wired to the actual backend running on a mocked Apps Script runtime — so the buttons are proven,
 not just the functions.
 

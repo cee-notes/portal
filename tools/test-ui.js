@@ -440,7 +440,8 @@ function makeRunner() {
     const dom2 = new JSDOM(raw, { runScripts: 'dangerously', pretendToBeVisual: true,
       url: 'https://cee-notes.github.io/portal/', virtualConsole: vc2 });
     const d2 = dom2.window.document;
-    await settle(25);                       // boot() runs on DOMContentLoaded
+    await new Promise(r => setTimeout(r, 2600));   // the page waits ~2 s for a runner before giving up
+    assert.strictEqual(d2.getElementById('reviewStd'), null, 'the app must not start without a server');
     const notice = d2.getElementById('offlineNotice');
     assert.ok(notice, 'no offline notice rendered');
     assert.match(notice.textContent, /plain copy of the portal page|Open the portal from its own link/);
@@ -449,6 +450,29 @@ function makeRunner() {
     // placeholder unreplaced on a static host -> no bogus link, just the owner note
     assert.match(notice.textContent, /Deploy .* Web app|Owner:/s);
     dom2.window.close();
+  });
+
+  await test('a runner that arrives late is not mistaken for a static copy', async () => {
+    // Apps Script installs google.script.run from its own script tag; if that lands after
+    // ours, the app has to wait for it instead of showing the offline notice.
+    const errs3 = [];
+    const vc3 = new VirtualConsole();
+    vc3.on('jsdomError', e => { if (!/Could not parse CSS|Not implemented/.test(String(e.message))) errs3.push(String(e.message)); });
+    const dom3 = new JSDOM(fs.readFileSync(P.HTML, 'utf8'), {
+      runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://script.google.com/macros/s/X/exec',
+      virtualConsole: vc3,
+      beforeParse(window) { window.google = { script: {} }; }        // no .run yet
+    });
+    await new Promise(r => setTimeout(r, 300));                      // boot() is now in its grace loop
+    assert.strictEqual(dom3.window.document.getElementById('offlineNotice'), null, 'gave up too early');
+    dom3.window.google.script.run = makeRunner();                   // framework catches up
+    await new Promise(r => setTimeout(r, 600));
+    const d3 = dom3.window.document;
+    assert.ok(d3.getElementById('reviewStd'), 'app did not start once the runner appeared');
+    assert.strictEqual(d3.getElementById('offlineNotice'), null);
+    assert.ok(d3.getElementById('supportLine'), 'startApp should have run');
+    assert.deepStrictEqual(errs3, [], 'late runner must not throw: ' + errs3.join(' | '));
+    dom3.window.close();
   });
 
   await test('no uncaught page errors during the whole run', () => {

@@ -59,10 +59,12 @@ MAX_IMAGE_BYTES: 120000                    // figure size cap, keeps Gmail inlin
 ```
 
 4. **Run `setup_` once** from the editor (function picker → `setup_` → Run) and accept the
-   permission prompts. It creates the four tabs, seeds 40 questions, and the sheet then also
-   gets a **CEE Mock Portal** menu (Setup / Health check). Setup is not strictly required —
-   everything self-creates and self-seeds on first use — but running it means you see the
-   "yes, it worked" alert.
+   permission prompts. This is mainly how you authorise the script: it creates the four tabs and
+   seeds 40 questions, and prints no dialog — "Execution completed" is the pass. Setup is not
+   strictly required (everything self-creates and self-seeds on first use), but to see the
+   "yes, it worked" numbers close the editor, reload the sheet, and use the new
+   **CEE Mock Portal → Setup / create tabs + seed bank** menu, which alerts
+   `Tabs ready: Users, Attempts, Responses, Questions` / `Seeded questions: 40`.
 
 ## 2. Publish it
 
@@ -217,7 +219,7 @@ To rebuild the single file after editing the UI:
 
 ```bash
 node tools/build.js      # writes cee_mock_all_in_one.gs
-bash tools/run.sh        # syntax + build + 91 acceptance checks
+bash tools/run.sh        # syntax + build + 92 acceptance checks
 ```
 
 Optional, if you prefer `clasp` to push code instead of pasting: `clasp push` works with the
