@@ -11,10 +11,7 @@ Student ──> /exec URL ──> Apps Script (Code.gs) ──> Sheet tabs: User
 
 ## Files
 
-**This repo is the GitHub Pages copy**, so the layout is the split form: `index.html` at the root is
-the landing door (Pages serves it), the actual portal lives in `src/Code.gs` + `src/index.html`, and
-`dist/cee_mock_all_in_one.gs` is the generated file you paste into Apps Script. `tools/paths.js`
-detects the layout, which is why the same test rig runs in both repos.
+
 
 - `tools/paths.js` — resolves where the sources live, so the same rig runs in the flat layout
   (`Code.gs` + `index.html` at the root, `pages/index.html` as the Pages door) and in the split
@@ -50,7 +47,7 @@ Usual loop: edit `Code.gs` / `index.html` → `node tools/build.js` → paste
 | 12 | micro-syllabus topic codes (Bio Z1–Z9/B1–B6, C1–C7, P1–P8, M1–M9) | `SYLLABUS`, `topicList`, filters in `apiStartMock_` | `test.js` §(12), UI picker tests |
 | — | `LockService.getScriptLock()` on every read-modify-write, row-cell updates only, `FALLBACK_BANK` (8) + seeded default bank (40) | `withLock_`, `updateRow_`, `maybeSeed_`, `FALLBACK_BANK` | `test.js` §Concurrency, §fallback |
 
-`bash tools/run.sh` runs all of it: **92 checks, all passing** (57 backend, 7 single-file,
+`bash tools/run.sh` runs all of it: **93 checks, all passing** (58 backend, 7 single-file,
 28 real-DOM UI). The UI tests load the actual `index.html` in jsdom with `google.script.run`
 wired to the actual backend running on a mocked Apps Script runtime — so the buttons are proven,
 not just the functions.

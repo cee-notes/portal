@@ -188,8 +188,15 @@ function tab_(name) {
   var hdr = HEADERS[name];
   for (var i = 0; i < hdr.length; i++) {
     idx[hdr[i]] = i + 1;                     // canonical column number (source of truth)
-    if (!head[i]) sh.getRange(1, i + 1).setValue(hdr[i]);   // repair missing header cells
-    else if (String(head[i]).toLowerCase() !== hdr[i].toLowerCase()) head[i] = hdr[i];
+    var cell = head[i] === null || head[i] === undefined ? '' : String(head[i]);
+    if (!cell) {
+      sh.getRange(1, i + 1).setValue(hdr[i]);               // fill a missing header cell
+    } else if (cell !== hdr[i] && cell.toLowerCase() === hdr[i].toLowerCase()) {
+      sh.getRange(1, i + 1).setValue(hdr[i]);               // Sheets auto-capitalised it: put it back
+    }
+    // Columns stay positional even if someone renames a header, so a renamed label
+    // can never hide data - and rowsOf_ below always keys by the canonical name.
+    head[i] = hdr[i];
   }
   return { sheet: sh, headers: head, index: idx, cols: hdr.length };
 }
@@ -213,8 +220,9 @@ function rowsOf_(name) {
     for (var c = 0; c < row.length; c++) { if (String(row[c]).length) { isEmpty = false; break; } }
     if (isEmpty) continue;
     var o = { _row: r + 2 };
-    for (var k = 0; k < t.headers.length; k++) {
-      if (t.headers[k]) o[String(t.headers[k])] = row[k];
+    var canon = HEADERS[name] || t.headers;
+    for (var k = 0; k < canon.length; k++) {
+      if (canon[k]) o[canon[k]] = row[k];    // never key by the sheet's own label text
     }
     out.push(o);
   }

@@ -53,6 +53,37 @@ test('health() reports the tabs and the embedded-html mode', () => {
 });
 
 /* ------------------------------------------------------------------ */
+test('a capitalised or renamed header row cannot hide the data', () => {
+  // Sheets auto-capitalises typed header cells, and the sheet IS the database: reading
+  // rows by the label text locked every account out (login "Email or password is
+  // incorrect", duplicate emails accepted, no teacher left able to approve anybody).
+  // on a throwaway workbook: snapshot/restore only swaps which spreadsheet is active,
+  // it does not roll back row writes, and later suites assume an empty Users tab
+  const keep = h.snapshot();
+  h.newSpreadsheet('HEADCASE', 'header case');
+  api.setup_(false);
+  const sh = api.__sheet('Users');
+  sh.getRange(1, 1, 1, 11).setValues([['ID', 'Name', 'Email', 'username', 'pass', 'role',
+    'status', 'deviceId', 'session', 'sessionExpiry', 'created']]);
+  const r = api.register({ name: 'Head Case', email: 'head@example.com', password: 'pass1234', deviceId: 'dev-head' });
+  assert.strictEqual(r.ok, true, r.error);
+  assert.ok(r.token, 'the first-ever registration must still get a session token');
+  const dup = api.register({ name: 'Same Person', email: 'head@example.com', password: 'pass1234' });
+  assert.strictEqual(dup.ok, false, 'duplicate detection must not silently accept a second row');
+  assert.match(dup.error, /already registered/);
+  const li = api.login({ ident: 'head@example.com', password: 'pass1234', deviceId: 'dev-head' });
+  assert.strictEqual(li.ok, true, 'login must find the row: ' + JSON.stringify(li));
+  assert.strictEqual(li.user.name, 'Head Case');
+  assert.strictEqual(api.__header('Users').join(','),
+    'id,name,email,username,pass,role,status,deviceId,session,sessionExpiry,created',
+    'a case-drifted header is repaired on read');
+  sh.getRange(1, 1).setValue('userId');                     // a deliberate rename
+  const li2 = api.login({ ident: 'head@example.com', password: 'pass1234', deviceId: 'dev-head' });
+  assert.strictEqual(li2.ok, true, 'columns stay positional: ' + JSON.stringify(li2));
+  assert.strictEqual(String(api.__sheet('Users').getRange(1, 1).getValue()), 'userId', 'never stomp a rename');
+  h.restore(keep);
+});
+
 section('(1)(2) Registration, admin approval, emails');
 const ADMIN = { name: 'Principal Sir', email: 'principal@example.com', password: 'teach3r!', deviceId: 'dev-admin-1' };
 const STUD = { name: 'Sita Sharma', email: 'sita@example.com', password: 'stud3nt!', deviceId: 'dev-sita-A' };

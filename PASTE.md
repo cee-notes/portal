@@ -1,83 +1,42 @@
 # Pasting this project into a repo from scratch
 
-The folder is already assembled (`/home/user/repo-from-scratch`, zipped as
-`/home/user/cee-portal-repo-files.zip`). 91 checks - `57 backend + 7 single-file + 27 real-DOM UI` -
-pass against exactly these bytes, verified with `bash tools/run.sh` inside this tree:
-
-```
-layout: split (src/ + dist/)
-wrote dist/cee_mock_all_in_one.gs  [split layout: src -> dist]
-PASSED  57 passed, 0 failed
-PASSED   7 passed, 0 failed
-PASSED  27 passed, 0 failed
-```
+Assembled in `/home/user/repo-from-scratch`, zipped as `/home/user/cee-portal-repo-files.zip`.
+Verified by running the project's own rig inside this tree: `58 + 7 + 28 = 93 checks`, 0 failures.
 
 ## Every file to paste
 
-| Repo path | Bytes | md5 (10) |
+27 files. The Apps Script artifact is `dist/cee_mock_all_in_one.gs` = 221,478 bytes, md5 `61c99db04ae9650b500a51a0c1abf559` - check that number after you
+paste, because a truncated 221 KB paste fails silently.
+
+| Repo path | Bytes | md5 |
 |---|---|---|
-| `.gitignore` | 290 | `341c9416b9` |
-| `CEE Notes Logo (2).jpg` | 23,289 | `9c4fb07b69` |
-| `DEPLOY.md` | 13,937 | `45cf4ef596` |
-| `PASTE.md` | 48 | `ac3293eb57` |
-| `README.md` | 8,754 | `89b323a798` |
-| `appsscript.json` | 405 | `0a5fa4d6c0` |
-| `dist/cee_mock_all_in_one.gs` | 220,151 | `6e59f32d81` |
-| `index.html` | 4,545 | `b4b70555b3` |
-| `package.json` | 374 | `2d4cee78ee` |
-| `questions-template.csv` | 1,063 | `0150b29765` |
-| `src/Code.gs` | 100,373 | `c033e1aef2` |
-| `src/index.html` | 83,063 | `151ae690e2` |
-| `tools/build.js` | 4,397 | `2a2af97c58` |
-| `tools/figure-vector.b64` | 3,352 | `7a9aaad062` |
-| `tools/figure-vector.png` | 2,514 | `0b1337755d` |
-| `tools/fixture.pdf` | 970 | `7a3443a55c` |
-| `tools/fixture.pdf.b64` | 1,296 | `20a1efd5ca` |
-| `tools/fixture.xlsx` | 2,074 | `73bd51c00e` |
-| `tools/fixture.xlsx.b64` | 2,768 | `1a72d53867` |
-| `tools/harness.js` | 12,183 | `6c2d2a8141` |
-| `tools/paths.js` | 1,305 | `bcafeb6a75` |
-| `tools/rebalance.py` | 3,760 | `15e91142e6` |
-| `tools/run.sh` | 810 | `eec9e08cbc` |
-| `tools/test-allinone.js` | 6,562 | `03327d63d0` |
-| `tools/test-ui.js` | 26,185 | `d43ac5476d` |
-| `tools/test.js` | 42,566 | `b665366eed` |
-
-`tools/` holds 14 files: `build.js paths.js harness.js test.js test-allinone.js test-ui.js run.sh
-rebalance.py` plus `fixture.xlsx`, `fixture.pdf`, `figure-vector.png` and their `.b64` twins.
-## Every file to paste
-
-Total 27 files, single-file build = 220,151 bytes (md5 `6e59f32d81`).
-
-| Repo path | Bytes | md5 (10) |
-|---|---|---|
-| `.gitignore` | 290 | `341c9416b9` |
-| `CEE Notes Logo (2).jpg` | 23,289 | `9c4fb07b69` |
-| `DEPLOY.md` | 14,154 | `56f14532c7` |
-| `PASTE.md` | 7,151 | `08446ff042` |
-| `README.md` | 8,754 | `6ae67179bc` |
-| `appsscript.json` | 405 | `0a5fa4d6c0` |
-| `dist/cee_mock_all_in_one.gs` | 220,151 | `6e59f32d81` |
-| `index.html` | 4,545 | `b4b70555b3` |
-| `package.json` | 374 | `2d4cee78ee` |
-| `questions-template.csv` | 1,063 | `0150b29765` |
-| `src/Code.gs` | 100,373 | `c033e1aef2` |
-| `src/index.html` | 83,677 | `9178cdd209` |
-| `tools/README.md` | 1,128 | `62ae987806` |
-| `tools/build.js` | 4,397 | `2a2af97c58` |
-| `tools/figure-vector.b64` | 3,352 | `7a9aaad062` |
-| `tools/figure-vector.png` | 2,514 | `0b1337755d` |
-| `tools/fixture.pdf` | 970 | `7a3443a55c` |
-| `tools/fixture.pdf.b64` | 1,296 | `20a1efd5ca` |
-| `tools/fixture.xlsx` | 2,074 | `73bd51c00e` |
-| `tools/fixture.xlsx.b64` | 2,768 | `1a72d53867` |
-| `tools/harness.js` | 12,183 | `6c2d2a8141` |
-| `tools/paths.js` | 1,305 | `bcafeb6a75` |
-| `tools/rebalance.py` | 3,760 | `15e91142e6` |
-| `tools/run.sh` | 810 | `eec9e08cbc` |
-| `tools/test-allinone.js` | 6,562 | `03327d63d0` |
-| `tools/test-ui.js` | 27,805 | `f94fb73e5e` |
-| `tools/test.js` | 42,566 | `b665366eed` |
+| `.gitignore` | 290 | `341c9416b9355f7faa8925837dd6f75a` |
+| `CEE Notes Logo (2).jpg` | 23,289 | `9c4fb07b69e75917700136dcee0e20b4` |
+| `DEPLOY.md` | 14,154 | `530ad4ba11f306c37fb9ae6407b81ea0` |
+| `PASTE.md` | 7,468 | `f6a6044bc871a94dfa9ecfc6fb68cc1d` |
+| `README.md` | 8,385 | `628bfd76baa6c3c8622f888bb875ee82` |
+| `appsscript.json` | 405 | `0a5fa4d6c089457446cac6ced1328244` |
+| `dist/cee_mock_all_in_one.gs` | 221,478 | `61c99db04ae9650b500a51a0c1abf559` |
+| `index.html` | 4,545 | `b4b70555b3d68d0813cff328f5eef025` |
+| `package.json` | 374 | `2d4cee78ee51b04b7c4f67d6511529f1` |
+| `questions-template.csv` | 1,063 | `0150b29765aa5387cafed23c5d30a44f` |
+| `src/Code.gs` | 100,831 | `2c4cc13c166d4bba78826606b28ad2ed` |
+| `src/index.html` | 83,677 | `9178cdd209d9d309d139a50312260ca2` |
+| `tools/README.md` | 1,128 | `62ae98780663b8d00558392e7de83356` |
+| `tools/build.js` | 4,397 | `2a2af97c58b50a0f01958107b29f495a` |
+| `tools/figure-vector.b64` | 3,352 | `7a9aaad062b1c406006c624e5843cb4a` |
+| `tools/figure-vector.png` | 2,514 | `0b1337755d505fa1a3b7163ae5f8ba7c` |
+| `tools/fixture.pdf` | 970 | `7a3443a55c6567382003feaaaf2b2da7` |
+| `tools/fixture.pdf.b64` | 1,296 | `20a1efd5ca67b87fb2df35e6348a98ac` |
+| `tools/fixture.xlsx` | 2,074 | `73bd51c00ee5603be9ec483e7ab58c3e` |
+| `tools/fixture.xlsx.b64` | 2,768 | `1a72d53867c9c1a1e28f63b762fc5790` |
+| `tools/harness.js` | 12,183 | `6c2d2a8141b0058fc46b4550ec435a1f` |
+| `tools/paths.js` | 1,305 | `bcafeb6a758b588fe4aee41095db96c2` |
+| `tools/rebalance.py` | 3,760 | `15e91142e69d5f3d604e7410a6970b38` |
+| `tools/run.sh` | 810 | `eec9e08cbce38740255ec43958c2653d` |
+| `tools/test-allinone.js` | 6,562 | `03327d63d0973fa4c0878a9d12eee2c4` |
+| `tools/test-ui.js` | 27,805 | `f94fb73e5e8d46386e98a65d5eedd612` |
+| `tools/test.js` | 44,679 | `2666fb7425085addf65d8f7ad897fd00` |
 
 ## What each file is for
 

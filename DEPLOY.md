@@ -219,7 +219,7 @@ To rebuild the single file after editing the UI:
 
 ```bash
 node tools/build.js      # writes cee_mock_all_in_one.gs
-bash tools/run.sh        # syntax + build + 92 acceptance checks
+bash tools/run.sh        # syntax + build + 93 acceptance checks
 ```
 
 Optional, if you prefer `clasp` to push code instead of pasting: `clasp push` works with the
