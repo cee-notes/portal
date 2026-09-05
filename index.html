@@ -456,6 +456,13 @@ Phy,P1,SI unit of force?,,,""></textarea>
 /*__INCLUDES__*/
 (function () {
 'use strict';
+
+// Detect if running inside Google Apps Script
+if (typeof google === 'undefined' || !google.script) {
+  document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f1220;color:#e8ebff;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:20px;text-align:center"><div style="max-width:500px"><img src="https://raw.githubusercontent.com/cee-notes/portal/main/CEE%20Notes%20Logo%20(2).jpg" alt="CEE Notes Logo" style="width:80px;height:80px;border-radius:12px;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,0,0,.3)"><h1 style="font-size:24px;margin-bottom:12px">Portal Access Error</h1><p style="color:#9aa3c0;line-height:1.6;margin-bottom:24px">This page must be opened from the official Google Apps Script portal. GitHub Pages cannot run the backend required for login and registration.</p><a href="https://script.google.com/macros/s/AKfycbwgnUluOVaruBxQijfMnxtbng0pZ0SL3cKv9aYrMTjpzjdKedUMGZl2rwBgGNHl_CQS/exec" style="display:inline-block;background:#4f7cff;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;box-shadow:0 4px 12px rgba(79,124,255,.3)">Open Official Portal →</a><p style="color:#9aa3c0;font-size:13px;margin-top:20px">Powered by <a href="https://www.cprecnepal.org.np" style="color:#a9c0ff">CPREC Nepal</a></p></div></div>';
+  return;
+}
+
 var RUN = google.script.run;
 var LS = 'cee_state_v1';
 var S = { token: '', user: null, dev: '', paper: null, ans: {}, mk: {}, cur: 0,
