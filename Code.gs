@@ -37,6 +37,8 @@ var CONFIG = {
   GRACE_SECONDS: 90,          // extra time tolerated by the server before it clamps
   MAX_QUESTIONS_PER_MOCK: 200,
   EMAIL_FROM_NAME: 'CEE Mock Portal',
+  EMAIL_REPLY_TO: 'support@cee-notes.cprecnepal.org.np',  // reply-to address for all outgoing mails
+  WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwgnUluOVaruBxQijfMnxtbng0pZ0SL3cKv9aYrMTjpzjdKedUMGZl2rwBgGNHl_CQS/exec',  // deployed web app URL
   EMAIL_ENABLED: true,        // master switch: false = no MailApp calls at all
   /** Personal Gmail accounts may only send ~100 recipients/day from Apps Script.
    *  If a mock day pushes you over the quota, switch the feedback mail off (or move
@@ -445,8 +447,9 @@ function apiRegister_(payload) {
       deviceId: '', session: '', sessionExpiry: '', created: now
     };
     appendRow_(TAB_USERS, row);
+    var portalUrl = CONFIG.WEB_APP_URL || getRootUrl_();
     notifyAdmins_('New registration', '' + name + ' (' + email + ') registered as ' + row.role +
-      (isAdmin ? ' (auto-approved)' : ' and needs approval.') + '\nPortal: ' + getRootUrl_());
+      (isAdmin ? ' (auto-approved)' : ' and needs approval.') + '\nPortal: ' + portalUrl);
     if (!isAdmin && CONFIG.EMAIL_STATUS_NOTIFY) {
       sendMail_(email, 'Account created - awaiting approval',
         '<p>Hello <b>' + esc_(name) + '</b>,</p><p>Your CEE Mock Portal account (' + esc_(email) +
@@ -1426,6 +1429,7 @@ function sendMail_(to, subject, html, inlineImages) {
   try {
     var opt = { to: to, subject: CONFIG.APP_NAME + ' - ' + subject, htmlBody: html,
       name: CONFIG.EMAIL_FROM_NAME };
+    if (CONFIG.EMAIL_REPLY_TO) { opt.replyTo = CONFIG.EMAIL_REPLY_TO; }
     if (inlineImages) { opt.inlineImages = inlineImages; }
     MailApp.sendEmail(opt);
     return { sent: true };
