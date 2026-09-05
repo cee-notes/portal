@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1220">
+<title>CEE Mock Portal</title>
+<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/cee-notes/portal/main/CEE%20Notes%20Logo%20(2).jpg">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/cee-notes/portal/main/CEE%20Notes%20Logo%20(2).jpg">
+<!--
+  Portal frontend. In the SPLIT deployment this is an Apps Script HTML file named
+  "index" (Code.gs include('index')). In the all-in-one deployment this whole file is
+  base64-encoded by tools/build.js into var EMBEDDED_HTML inside cee_mock_all_in_one.gs.
+-->
+<style>
+:root{
+  --bg:#0f1220; --panel:#171b2e; --panel2:#1e2338; --ink:#e8ebff; --mut:#9aa3c0;
+  --line:#2a3150; --acc:#4f7cff; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --skip:#7a8199;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Devanagari",Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%;padding-bottom:40px}
+.wrap{max-width:1080px;margin:0 auto;padding:14px}
+h1,h2,h3,h4{margin:0 0 8px;line-height:1.25;font-weight:700}
+h1{font-size:20px} h2{font-size:17px} h3{font-size:15px}
+a{color:#a9c0ff}
+.mut{color:var(--mut);font-size:13px}
+.tiny{font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.bar{position:sticky;top:0;z-index:20;background:rgba(15,18,32,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+.logo img{width:32px;height:32px;border-radius:6px;object-fit:contain;background:#fff;padding:2px}
+.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#4f7cff,#8b5cf6);display:inline-block;position:relative}
+.logo i:after{content:"";position:absolute;inset:7px;border-radius:3px;background:#0f1220}
+.spacer{flex:1}
+.badge{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:4px 10px;font-size:12px;white-space:nowrap}
+.badge.hot{border-color:var(--warn);color:#ffd591}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.top{align-items:flex-start}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+label{display:block;font-size:12px;color:var(--mut);margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea,button{font:inherit;color:inherit}
+input[type=text],input[type=email],input[type=password],input[type=number],select,textarea{
+  width:100%;background:#12162a;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,124,255,.18)}
+textarea{min-height:76px;resize:vertical}
+button{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-weight:600;color:var(--ink)}
+button:hover{border-color:#3b4770}
+button:active{transform:translateY(1px)}
+button.pri{background:linear-gradient(180deg,#5b86ff,#3f6ae6);border-color:#4f7cff;color:#fff}
+button.ok{background:linear-gradient(180deg,#25cf6d,#16a150);border-color:#16a150;color:#04220f}
+button.bad{background:#2a1420;border-color:#5d2230;color:#ffb3b3}
+button.ghost{background:transparent}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.big{padding:13px 18px;font-size:16px;border-radius:12px;width:100%}
+.tabbar{display:flex;gap:6px;background:var(--panel2);padding:5px;border-radius:12px;border:1px solid var(--line);margin-bottom:12px;overflow:auto}
+.tabbar button{border:0;background:transparent;padding:8px 12px;border-radius:9px;font-weight:600;color:var(--mut);white-space:nowrap}
+.tabbar button.on{background:var(--acc);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.tblwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#141830}
+.tblwrap table{min-width:640px}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line)}
+.pill.ok{color:#8ff0b6;border-color:#1e6b41;background:rgba(34,197,94,.12)}
+.pill.bad{color:#ffb0b0;border-color:#7a2b2b;background:rgba(239,68,68,.12)}
+.pill.wait{color:#ffd48a;border-color:#7a5c1e;background:rgba(245,158,11,.12)}
+.pill.info{color:#b7caff;border-color:#31446f;background:rgba(79,124,255,.12)}
+.note{background:#141830;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:0 10px 10px 0;padding:9px 11px;font-size:13px;color:#c9d2f2}
+.err{border-left-color:var(--bad);color:#ffc9c9;background:rgba(239,68,68,.08)}
+.good{border-left-color:var(--ok);color:#c6f6d5;background:rgba(34,197,94,.08)}
+.hidden{display:none!important}
+.msg{margin-top:10px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--panel2);
+  border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin:0 0 8px}
+.opt b.k{flex:0 0 26px;height:26px;border-radius:8px;background:#10142a;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mut)}
+.opt.sel{border-color:var(--acc);background:rgba(79,124,255,.16);box-shadow:0 0 0 1px var(--acc) inset}
+.opt.sel b.k{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt.right{border-color:var(--ok);background:rgba(34,197,94,.14)}
+.opt.wrong{border-color:var(--bad);background:rgba(239,68,68,.14)}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.palette button{padding:0;height:34px;border-radius:9px;font-size:13px;background:#12162a;border:1px solid var(--line);color:var(--mut)}
+.palette button.done{background:rgba(79,124,255,.2);border-color:var(--acc);color:#dbe6ff}
+.palette button.mk{border-color:var(--warn);color:#ffd48a}
+.palette button.done.mk{background:rgba(245,158,11,.22)}
+.palette button.now{outline:2px solid #fff;outline-offset:1px}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:16px;padding:6px 10px;border-radius:10px;background:#12162a;border:1px solid var(--line)}
+.timer.low{color:#ffd0d0;border-color:var(--bad);background:rgba(239,68,68,.14)}
+.fignum{max-width:100%;border-radius:10px;border:1px solid var(--line);background:#fff;display:block;margin:8px 0}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 10px;background:var(--panel2)}
+.item h4{margin:0 0 6px;font-size:14px}
+.item .st{font-weight:800}
+.item.correct{border-left:3px solid var(--ok)} .item.wrong{border-left:3px solid var(--bad)}
+.item.skipped{border-left:3px solid var(--skip)} .item.missing{border-left:3px solid var(--warn)}
+.expl{background:#12162a;border-left:3px solid var(--acc);padding:7px 10px;border-radius:0 8px 8px 0;font-size:13px;color:#c9d2f2;margin-top:8px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center}
+.stat b{display:block;font-size:20px;line-height:1.2}
+.stat span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#0b0e1c;border:1px solid var(--acc);
+  color:var(--ink);padding:10px 14px;border-radius:12px;z-index:99;max-width:92vw;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.para{display:block;width:100%;text-align:left;background:#12162a;border:1px solid var(--line);border-radius:9px;
+  padding:7px 9px;margin:0 0 6px;font-size:13px;color:#c9d2f2;white-space:normal}
+.para:hover{border-color:var(--acc);background:rgba(79,124,255,.12)}
+.scroller{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:#10142a}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.tag{display:inline-block;background:#12162a;border:1px solid var(--line);border-radius:7px;padding:2px 7px;font-size:11px;color:var(--mut);margin:0 4px 4px 0}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:640px){
+  body{font-size:15px} .wrap{padding:10px} h1{font-size:18px}
+  .bar .wrap{gap:6px;padding:8px 10px} .palette{grid-template-columns:repeat(auto-fill,minmax(34px,1fr))}
+  th,td{padding:6px 7px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="wrap">
+    <span class="logo"><img src="https://raw.githubusercontent.com/cee-notes/portal/main/CEE%20Notes%20Logo%20(2).jpg" alt="CPREC Nepal"> CEE Mock Portal</span>
+    <span class="spacer"></span>
+    <span id="pendBadge" class="badge hot hidden"></span>
+    <span id="who" class="badge hidden"></span>
+    <button id="btnStudent" class="ghost hidden">Student</button>
+    <button id="btnTeacher" class="ghost hidden">Teacher</button>
+    <button id="btnLogout" class="ghost hidden">Log out</button>
+  </div>
+</div>
+<div class="wrap">
+
+<!-- ============================ AUTH ============================ -->
+<section id="scr-auth">
+  <div class="card" style="max-width:520px;margin:14px auto">
+    <h1>Medical Entrance Mock Portal</h1>
+    <p class="mut" style="margin-top:0">Timed MCQ practice for MBBS/BDS entrance in Nepal. Marking: +1 correct, &minus;0.25 wrong, 0 not attempted.</p>
+    <div class="tabbar">
+      <button id="tab-login" class="on">Log in</button>
+      <button id="tab-register">Register</button>
+    </div>
+    <div id="pane-login">
+      <label for="li-ident">Email (your login id)</label>
+      <input id="li-ident" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com">
+      <div style="height:10px"></div>
+      <label for="li-pass">Password</label>
+      <input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••">
+      <div style="height:12px"></div>
+      <button id="btnLogin" class="pri big">Log in</button>
+      <div class="note tiny" style="margin-top:10px">Your account is locked to the first device you log in from. Changed phone or laptop? Ask your teacher to reset the device lock.</div>
+      <div class="note tiny" style="margin-top:8px" id="supportLine">Trouble with your account? Write to <a href="mailto:__SUPPORT_EMAIL__">__SUPPORT_EMAIL__</a></div>
+      <div id="liMsg" class="hidden msg"></div>
+    </div>
+    <div id="pane-register" class="hidden">
+      <div class="grid g2">
+        <div><label for="rg-name">Full name</label><input id="rg-name" type="text" placeholder="Sita Sharma"></div>
+        <div><label for="rg-email">Email (used as login id)</label><input id="rg-email" type="email" placeholder="sita@example.com"></div>
+        <div><label for="rg-user">Username (optional)</label><input id="rg-user" type="text" placeholder="sita"></div>
+        <div><label for="rg-pass">Password (min 6)</label><input id="rg-pass" type="password" placeholder="min 6 characters"></div>
+        <div><label for="rg-pass2">Repeat password</label><input id="rg-pass2" type="password" placeholder="repeat"></div>
+      </div>
+      <div style="height:12px"></div>
+      <button id="btnRegister" class="pri big">Create account</button>
+      <div class="note" style="margin-top:10px">A teacher must <b>approve</b> your registration before you can log in. You will get an email when it happens.</div>
+      <div id="rgMsg" class="hidden msg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== STUDENT DASHBOARD ====================== -->
+<section id="scr-student" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div>
+        <h1 id="st-hello">Welcome</h1>
+        <div class="mut tiny" id="st-sub"></div>
+      </div>
+      <span class="spacer"></span>
+      <span id="st-session" class="badge"></span>
+    </div>
+    <div id="resumeBox" class="note good hidden" style="margin-top:10px">
+      <div class="row"><span id="resumeNote">You have an attempt in progress on this device.</span><span class="spacer"></span>
+      <button id="btnResume" class="pri">Resume mock</button>
+      <button id="btnDropResume" class="ghost">Discard</button></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Start a mock</h2>
+      <div class="grid g2">
+        <div><label for="mk-section">Section</label><select id="mk-section"></select></div>
+        <div><label for="mk-topic">Micro-syllabus topic (optional)</label><select id="mk-topic"></select></div>
+        <div><label for="mk-count">Questions</label><select id="mk-count">
+          <option>5</option><option selected>10</option><option>15</option><option>20</option>
+          <option>25</option><option>50</option><option>100</option></select></div>
+        <div><label for="mk-min">Minutes</label><select id="mk-min">
+          <option>5</option><option>10</option><option selected>15</option><option>20</option>
+          <option>30</option><option>45</option><option>60</option><option>90</option><option>120</option><option>180</option></select></div>
+      </div>
+      <div style="height:12px"></div>
+      <button id="btnStart" class="pri big">Start mock test</button>
+      <div class="mut tiny" style="margin-top:8px">Option order is shuffled for every student. The timer runs in the app; the server enforces its own deadline. Auto-submits at 00:00.</div>
+      <div id="startMsg" class="hidden msg"></div>
+    </div>
+    <div class="card">
+      <h2>Your progress</h2>
+      <div class="grid g4">
+        <div class="stat"><b id="stAttempts">0</b><span>Mocks</span></div>
+        <div class="stat"><b id="stBest">0</b><span>Best pts</span></div>
+        <div class="stat"><b id="stAvg">0</b><span>Avg pts</span></div>
+        <div class="stat"><b id="stAcc">0%</b><span>Last acc</span></div>
+      </div>
+      <div class="mut tiny" style="margin-top:8px">Score = correct &minus; 0.25 &times; wrong (server-computed).</div>
+      <h3 style="margin-top:14px">Recent attempts</h3>
+      <div class="tblwrap">
+        <table><thead><tr><th>When</th><th>Section</th><th>Score</th><th>Acc</th><th></th></tr></thead>
+        <tbody id="histList"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== EXAM ========================== -->
+<section id="scr-exam" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div><h2 style="margin:0">Question <span id="ex-num">1/10</span></h2>
+        <div class="tiny mut"><span id="ex-sec" class="pill info"></span> <span id="ex-topic" class="tag"></span></div></div>
+      <span class="spacer"></span>
+      <span id="ex-timer" class="timer">00:00</span>
+    </div>
+    <div style="height:10px"></div>
+    <div class="row tiny mut"><span id="ex-progress">0 answered</span><span class="spacer"></span>
+      <span id="ex-marked" class="pill wait hidden">marked</span></div>
+  </div>
+  <div class="card">
+    <div id="ex-q" style="font-size:17px;line-height:1.5"></div>
+    <div id="ex-imgbox"></div>
+    <div style="height:12px"></div>
+    <div id="ex-opts"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="btnPrev">Prev</button>
+      <button id="btnNext" class="pri">Next</button>
+      <button id="btnClear">Clear</button>
+      <button id="btnMark">Mark for review</button>
+      <span class="spacer"></span>
+      <button id="btnSubmitExam" class="ok">Submit mock</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Palette <span class="mut tiny">(tap a number to jump)</span></h3>
+    <div id="palette" class="palette"></div>
+    <div class="tiny mut" style="margin-top:8px"><span class="pill info">&nbsp;</span> answered &nbsp; <span class="pill wait">&nbsp;</span> marked for review</div>
+  </div>
+</section>
+
+<!-- ========================== RESULT ========================== -->
+<section id="scr-result" class="hidden">
+  <div class="card">
+    <h1 id="rs-title">Result</h1>
+    <div class="mut tiny" id="rs-sub"></div>
+    <div class="grid g4" style="margin-top:12px" id="rs-stats"></div>
+    <div id="rs-warn"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="btnBackDash" class="pri">Back to dashboard</button>
+      <button id="btnRetry">Take another mock</button>
+      <span class="spacer"></span>
+      <span class="tiny mut" id="rs-mail"></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row"><h2 style="margin:0">Answer review</h2><span class="spacer"></span>
+      <label class="tiny" style="text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="rs-onlyWrong" style="width:auto"> only wrong &amp; skipped</label></div>
+    <div id="rs-list" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ====================== TEACHER DASHBOARD ====================== -->
+<section id="scr-teacher" class="hidden">
+  <div class="card">
+    <div class="row"><h1 style="margin:0">Teacher dashboard</h1><span class="spacer"></span>
+      <button id="btnRefreshT" class="ghost">Refresh</button></div>
+    <div class="grid g4" style="margin-top:10px" id="t-stats"></div>
+    <div class="tabbar" style="margin-top:12px">
+      <button data-tt="abs" class="on">Approvals <span id="tt-abs-n"></span></button>
+      <button data-tt="std">Students &amp; attempts</button>
+      <button data-tt="bank">Question bank</button>
+      <button data-tt="pdf">PDF builder</button>
+      <button data-tt="sys">System</button>
+    </div>
+  </div>
+
+  <!-- approvals -->
+  <div class="card tt-pane" data-pane="abs">
+    <h2>Pending approvals</h2>
+    <p class="mut tiny">New students are <b>pending</b> and cannot log in until approved. Approving or rejecting sends them an email automatically.</p>
+    <div id="absList"></div>
+  </div>
+
+  <!-- students + attempts -->
+  <div class="tt-pane hidden" data-pane="std">
+    <div class="card">
+      <h2>Students</h2>
+      <div class="tblwrap"><table><thead><tr>
+        <th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Device</th><th>Session</th><th>Mocks</th><th>Best</th><th></th>
+      </tr></thead><tbody id="stdList"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2>Recent attempts</h2>
+      <div class="tblwrap"><table><thead><tr><th>When</th><th>Student</th><th>Section</th><th>Score</th><th>Acc</th><th></th></tr></thead>
+        <tbody id="recentList"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- question bank -->
+  <div class="tt-pane hidden" data-pane="bank">
+    <div class="card">
+      <h2>Add one question</h2>
+      <div class="grid g2">
+        <div><label for="qf-section">Section</label><select id="qf-section"></select></div>
+        <div><label for="qf-topic">Topic code (type or pick)</label>
+          <input id="qf-topic" list="tl-qf-topic" placeholder="P1" autocomplete="off"><datalist id="tl-qf-topic"></datalist></div>
+      </div>
+      <div style="height:10px"></div>
+      <label for="qf-question">Question</label>
+      <textarea id="qf-question" placeholder="Type or paste the question stem."></textarea>
+      <div class="grid g2" style="margin-top:10px">
+        <div><label for="qf-a">A</label><input id="qf-a" type="text"></div>
+        <div><label for="qf-b">B</label><input id="qf-b" type="text"></div>
+        <div><label for="qf-c">C</label><input id="qf-c" type="text"></div>
+        <div><label for="qf-d">D</label><input id="qf-d" type="text"></div>
+      </div>
+      <div class="grid g2" style="margin-top:10px">
+        <div><label for="qf-answer">Correct option</label><select id="qf-answer">
+          <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+        <div><label for="qf-image">Figure image (URL or file)</label>
+          <div class="row"><input id="qf-image" type="text" placeholder="https://… or upload →" style="flex:1;min-width:120px">
+          <input type="file" id="qf-imgfile" accept="image/*" style="display:none">
+          <button id="btnImgPick" type="button">Upload</button></div></div>
+      </div>
+      <div id="qf-imgprev" style="margin-top:8px"></div>
+      <div style="height:10px"></div>
+      <label for="qf-expl">Explanation (shown in the review and in the feedback email)</label>
+      <textarea id="qf-expl" placeholder="Why this option is correct."></textarea>
+      <div class="row" style="margin-top:12px">
+        <button id="btnSaveQ" class="pri">Save question</button>
+        <button id="btnResetQ" class="ghost">Clear form</button>
+        <span class="spacer"></span>
+        <span id="qf-editing" class="pill info hidden"></span>
+      </div>
+      <div id="qfMsg" class="hidden msg"></div>
+    </div>
+    <div class="card">
+      <h2>Bulk upload (CSV / XLSX)</h2>
+      <p class="mut tiny">Columns: <span class="mono">section, topic, question, A, B, C, D, answer, explanation, image</span> &mdash;
+        <span class="mono">answer</span> may be a letter (A-D) or the exact option text. <span class="mono">image</span> may be a URL or a <span class="mono">data:</span> URI.</p>
+      <div class="row">
+        <input type="file" id="upFile" accept=".csv,.txt,.xlsx,text/csv">
+        <button id="btnUpload" class="pri">Upload file</button>
+        <button id="btnTemplate" class="ghost">Download CSV template</button>
+      </div>
+      <div style="height:10px"></div>
+      <label for="csvText">…or paste CSV rows</label>
+      <textarea id="csvText" class="mono" placeholder="section,topic,question,A,B,C,D,answer,explanation,image
+Phy,P1,SI unit of force?,,,""></textarea>
+      <div class="row" style="margin-top:10px">
+        <button id="btnImportCsv" class="pri">Import pasted rows</button>
+        <button id="btnExportCsv" class="ghost">Export bank as CSV</button>
+        <button id="btnSeed" class="ghost">Seed default bank</button>
+      </div>
+      <div id="upMsg" class="hidden msg"></div>
+    </div>
+    <div class="card">
+      <h2>Question bank <span class="mut tiny" id="bankStats"></span></h2>
+      <div class="row">
+        <select id="qFilter-sec" style="max-width:150px"></select>
+        <input id="qFilter-q" type="text" placeholder="search text / topic code" style="flex:1;min-width:140px">
+        <button id="btnQFilter" class="ghost">Filter</button>
+      </div>
+      <div id="qList" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- pdf builder -->
+  <div class="tt-pane hidden" data-pane="pdf">
+    <div class="card">
+      <h2>Build a question from your syllabus PDF</h2>
+      <ol class="mut tiny" style="margin:0 0 10px 18px;padding:0">
+        <li>Open the PDF here &mdash; the text is read <b>in your browser</b> (nothing is uploaded).</li>
+        <li>Pick the section and micro-syllabus topic code for tagging.</li>
+        <li>Click a sentence (or highlight your own text) to insert it as the question stem.</li>
+        <li>Fill the four options + the correct one and save it into the bank.</li>
+      </ol>
+      <div class="row">
+        <input type="file" id="pdfFile" accept="application/pdf,.pdf">
+        <span class="spacer"></span>
+        <button id="btnPdfServer" class="ghost">Read this PDF on the server instead</button>
+      </div>
+      <div id="pdfStatus" class="mut tiny" style="margin-top:8px"></div>
+      <div class="grid g2" style="margin-top:10px">
+        <div><label for="pdf-section">Section</label><select id="pdf-section"></select></div>
+        <div><label for="pdf-topic">Topic code (type or pick)</label>
+          <input id="pdf-topic" list="tl-pdf-topic" placeholder="Z1" autocomplete="off"><datalist id="tl-pdf-topic"></datalist></div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="row"><h3 style="margin:0">Sentences found <span class="mut tiny" id="pdf-count"></span></h3><span class="spacer"></span>
+        <button id="btnUseSelection" class="ghost">Use my highlight</button></div>
+      <div id="pdfOut" class="scroller" style="margin-top:8px"><div class="mut tiny">Open a PDF to list its sentences here.</div></div>
+      <div style="height:10px"></div>
+      <label for="pdf-question">Question stem (editable)</label>
+      <textarea id="pdf-question" placeholder="Click a sentence above, or type your own."></textarea>
+      <div class="grid g2" style="margin-top:10px">
+        <div><label for="pdf-a">A</label><input id="pdf-a" type="text"></div>
+        <div><label for="pdf-b">B</label><input id="pdf-b" type="text"></div>
+        <div><label for="pdf-c">C</label><input id="pdf-c" type="text"></div>
+        <div><label for="pdf-d">D</label><input id="pdf-d" type="text"></div>
+        <div><label for="pdf-answer">Correct</label><select id="pdf-answer">
+          <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+        <div><label for="pdf-expl">Explanation</label><input id="pdf-expl" type="text"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="btnPdfSave" class="pri">Save into question bank</button>
+        <button id="btnPdfToForm" class="ghost">Copy to full form (with image)</button>
+      </div>
+      <div id="pdfMsg" class="hidden msg"></div>
+    </div>
+  </div>
+
+  <!-- system -->
+  <div class="tt-pane hidden" data-pane="sys">
+    <div class="card">
+      <h2>Portal health</h2>
+      <div class="row"><button id="btnHealth" class="ghost">Run health check</button>
+        <span class="mut tiny">Reads the four tabs, reports counts and your remaining Gmail send quota for today (consumer accounts are capped at 100 recipients/day).</span></div>
+      <pre id="healthOut" class="mono scroller hidden" style="margin-top:10px;white-space:pre-wrap"></pre>
+      <div id="healthNote" class="mut tiny" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2>Portal link &amp; support</h2>
+      <p class="mut tiny">The link students get in every email (approval, result, review). Paste the
+        <b>/exec</b> URL from Deploy &rarr; Manage deployments. Leave it empty and the emails omit the link.</p>
+      <div class="row"><input id="tPortal" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;min-width:240px">
+        <button id="btnPortal" class="pri">Save</button></div>
+      <div class="row" style="margin-top:10px"><div style="flex:1;min-width:200px">
+        <label for="tSupport">Support address (shown in emails, replies go here)</label>
+        <input id="tSupport" type="email" placeholder="support@your-domain.np" style="width:100%"></div></div>
+      <div id="portalMsg" class="hidden msg"></div>
+    </div>
+    <div class="card">
+      <h2>Micro-syllabus topic codes</h2>
+      <div id="syllabusOut" class="tiny"></div>
+    </div>
+    <div class="card">
+      <h2>Danger zone</h2>
+      <p class="mut tiny">Clears Users, Attempts and Responses (the question bank is kept). Teachers can reset a single student's device lock from the Students table instead.</p>
+      <div class="row"><input id="dangerPhrase" type="text" placeholder="type: RESET DATA" style="max-width:220px">
+        <button id="btnDanger" class="bad">Wipe portal data</button></div>
+      <div id="dangerMsg" class="hidden msg"></div>
+    </div>
+  </div>
+</section>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script>
+/*__INCLUDES__*/
+(function () {
+'use strict';
+/* google.script.run only exists inside HTML served by the Apps Script web app.
+ *  A plain copy (GitHub Pages, a local file) has no server to talk to, so bind
+ *  lazily and tell the visitor where the real portal is instead of freezing. */
+var RUN = (typeof google !== 'undefined' && google.script.run) ? google.script.run : null;
+var LS = 'cee_state_v1';
+var S = { token: '', user: null, dev: '', paper: null, ans: {}, mk: {}, cur: 0,
+  started: 0, minutes: 0, timer: null, pending: 0, bank: { size: 0 }, syllabus: null,
+  lastResult: null, mode: 'student' };
+
+/* ---------------- tiny helpers ---------------- */
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined && html !== null) e.innerHTML = html; return e; }
+function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function msg(id, text, kind) {
+  var b = $(id); if (!b) return;
+  b.className = 'msg ' + (kind === 'err' ? 'note err' : kind === 'ok' ? 'note good' : 'note');
+  b.innerHTML = text;
+}
+function hideMsg(id) { var b = $(id); if (b) b.className = 'hidden'; }
+var toastT = 0;
+function toast(t) { var b = $('toast'); b.innerHTML = t; b.className = 'toast'; clearTimeout(toastT); toastT = setTimeout(function () { b.className = 'toast hidden'; }, 4200); }
+function api(name) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return new Promise(function (res, rej) {
+    var dead = false;
+    var t = setTimeout(function () { dead = true; rej(new Error('No answer from the server yet - Google may be starting the script. Try again in a second.')); }, 175000);
+    var ok = function (r) { if (dead) return; clearTimeout(t); res(r); };
+    var bad = function (e) { if (dead) return; clearTimeout(t); rej(e); };
+    try {
+      var runner = RUN.withSuccessHandler(ok).withFailureHandler(bad);
+      runner[name].apply(runner, args);
+    } catch (err) { clearTimeout(t); rej(err); }
+  });
+}
+function isSessionFail(r) { return r && r.ok === false && r.session; }
+function guard(r, fatalId) {
+  if (isSessionFail(r)) {
+    if (fatalId) msg(fatalId, esc(r.error) + ' <button data-act="relogin">Log in again</button>', 'err');
+    forceLogin(r.error);
+    return true;
+  }
+  if (r && r.ok === false && !r.soft) { if (fatalId) msg(fatalId, esc(r.error), 'err'); else toast(esc(r.error)); }
+  return !!(r && r.ok === false);
+}
+function forceLogin(text) {
+  stopTimer();
+  S.token = ''; S.user = null;
+  try { localStorage.removeItem(LS + '_token'); } catch (e) {}
+  show('auth');
+  $('liMsg').className = 'msg note err';
+  $('liMsg').innerHTML = esc(text || 'Your 24-hour session ended. Please log in again.');
+}
+
+/* ---------------- state ---------------- */
+function ensureDev() {
+  var d = '';
+  try { d = localStorage.getItem('cee_dev') || ''; } catch (e) {}
+  if (!d) {
+    var out = '', buf = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(buf);
+    for (var i = 0; i < buf.length; i++) {
+      var v = buf[i] || Math.floor(Math.random() * 255);
+      out += (v < 16 ? '0' : '') + v.toString(16);
+    }
+    d = out;
+    try { localStorage.setItem('cee_dev', d); } catch (e) {}
+  }
+  S.dev = d;
+  return d;
+}
+function save() {
+  try {
+    localStorage.setItem(LS, JSON.stringify({
+      token: S.token, user: S.user, dev: S.dev, paper: S.paper, ans: S.ans, mk: S.mk,
+      cur: S.cur, started: S.started, minutes: S.minutes
+    }));
+  } catch (e) { /* private mode: run in memory only */ }
+}
+function load() {
+  try {
+    var raw = localStorage.getItem(LS);
+    if (!raw) return;
+    var o = JSON.parse(raw);
+    for (var k in o) if (o.hasOwnProperty(k)) S[k] = o[k];
+  } catch (e) {}
+}
+function clearAttempt() {
+  S.paper = null; S.ans = {}; S.mk = {}; S.cur = 0; S.started = 0; S.minutes = 0; save();
+}
+
+/* ---------------- screens ---------------- */
+function isTeacher() { return !!(S.user && (S.user.role === 'teacher' || S.user.role === 'admin')); }
+function show(name) {
+  if (name === 'teacher' && !isTeacher()) { toast('Teacher rights are needed for that screen.'); name = 'student'; }
+  var ids = ['auth', 'student', 'exam', 'result', 'teacher'];
+  for (var i = 0; i < ids.length; i++) {
+    $('scr-' + ids[i]).className = (ids[i] === name) ? '' : 'hidden';
+  }
+  var logged = !!S.token;
+  $('who').className = 'badge' + (logged ? '' : ' hidden');
+  $('btnLogout').className = 'ghost' + (logged ? '' : ' hidden');
+  $('btnStudent').className = 'ghost hidden';
+  $('btnTeacher').className = 'ghost hidden';
+  if (logged && S.user) {
+    $('who').textContent = (S.user.name || S.user.email) + (S.user.role === 'teacher' ? ' (teacher)' : '');
+    $('btnStudent').className = 'ghost' + (name === 'teacher' ? '' : ' hidden');
+    $('btnTeacher').className = 'ghost' + (name === 'student' || name === 'result' || name === 'exam' ? '' : ' hidden');
+  }
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- auth ---------------- */
+function initAuth() {
+  $('tab-login').onclick = function () { $('tab-login').className = 'on'; $('tab-register').className = ''; $('pane-login').className = ''; $('pane-register').className = 'hidden'; };
+  $('tab-register').onclick = function () { $('tab-register').className = 'on'; $('tab-login').className = ''; $('pane-register').className = ''; $('pane-login').className = 'hidden'; };
+
+  $('btnLogin').onclick = function () {
+    var ident = $('li-ident').value.trim(), pass = $('li-pass').value;
+    if (!ident || !pass) { msg('liMsg', 'Enter your email and password.', 'err'); return; }
+    busy($('btnLogin'), true);
+    api('login', { ident: ident, password: pass, deviceId: ensureDev(), ua: navigator.userAgent })
+      .then(function (r) {
+        busy($('btnLogin'), false);
+        if (guard(r, 'liMsg')) return;
+        S.token = r.token; S.user = r.user; save();
+        msg('liMsg', r.bound ? 'This device is now bound to your account.' : 'Welcome back.', 'ok');
+        afterLogin();
+      }, function (e) { busy($('btnLogin'), false); msg('liMsg', esc(e.message || e), 'err'); });
+  };
+  $('li-pass').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') $('btnLogin').click(); });
+
+  $('btnRegister').onclick = function () {
+    var p = { name: $('rg-name').value.trim(), email: $('rg-email').value.trim(),
+      username: $('rg-user').value.trim(), password: $('rg-pass').value, ua: navigator.userAgent, deviceId: ensureDev() };
+    if (p.password !== $('rg-pass2').value) { msg('rgMsg', 'The two passwords do not match.', 'err'); return; }
+    busy($('btnRegister'), true);
+    api('register', p).then(function (r) {
+      busy($('btnRegister'), false);
+      if (guard(r, 'rgMsg')) return;
+      if (r.auto && r.token) {
+        S.token = r.token; S.user = r.user; save();
+        toast('Admin account ready - you are logged in.');
+        afterLogin();
+        return;
+      }
+      msg('rgMsg', '<b>Registered.</b> ' + esc(r.message || '') +
+        ' A teacher has been emailed. Come back here and log in once you get the approval email.', 'ok');
+      $('li-ident').value = p.email;
+      $('tab-login').click();
+    }, function (e) { busy($('btnRegister'), false); msg('rgMsg', esc(e.message || e), 'err'); });
+  };
+  $('btnLogout').onclick = function () {
+    var t = S.token; clearAttempt();
+    api('logout', t).then(function () {}, function () {});
+    S.token = ''; S.user = null; save(); show('auth'); toast('Logged out.');
+  };
+}
+function busy(btn, on) {
+  if (!btn) return;
+  if (on) { btn.dataset.t = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Working…'; }
+  else { btn.disabled = false; if (btn.dataset.t) btn.innerHTML = btn.dataset.t; }
+}
+function afterLogin() {
+  if (S.user && (S.user.role === 'teacher' || S.user.role === 'admin')) { S.mode = 'teacher'; show('teacher'); loadTeacher(); }
+  else { S.mode = 'student'; show('student'); }
+  refreshMe();
+  renderStudentPanel();
+  if (S.paper && S.started) resumeNotice();
+}
+function refreshMe() {
+  return api('me', S.token).then(function (r) {
+    if (guard(r)) return;
+    S.user = r.user; S.syllabus = r.syllabus || S.syllabus;
+    if (r.pending) { $('pendBadge').className = 'badge hot'; $('pendBadge').textContent = r.pending + ' pending'; }
+    else { $('pendBadge').className = 'badge hot hidden'; }
+    if (r.stats) {
+      $('stAttempts').textContent = r.stats.attempts; $('stBest').textContent = r.stats.best;
+      $('stAvg').textContent = r.stats.avg;
+    }
+    if (r.bank) S.bank = r.bank;
+    if (r.expires) { S.expires = r.expires; $('st-session').textContent = 'session valid until ' + r.expires; }
+    save();
+  }, function () {});
+}
+
+/* ---------------- student dashboard ---------------- */
+function renderStudentPanel() {
+  var u = S.user || {};
+  $('st-hello').textContent = 'Hello, ' + (u.name || u.email || 'student');
+  $('st-sub').textContent = (u.role === 'teacher' ? 'teacher account' : 'student account') + ' · ' + (u.email || '');
+  $('st-session').textContent = (S.expires ? 'session valid until ' + S.expires : 'session: 24 h window');
+  fillSectionSelect($('mk-section'), true);
+  fillTopicSelect($('mk-topic'), $('mk-section').value);
+  $('mk-section').onchange = function () { fillTopicSelect($('mk-topic'), this.value); };
+  api('myAttempts', S.token).then(function (r) {
+    if (guard(r)) return;
+    var tb = $('histList'); tb.innerHTML = '';
+    var list = r.attempts || [];
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="5" class="mut tiny">No attempts yet - take your first mock above.</td></tr>'; return; }
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      var tr = el('tr');
+      tr.innerHTML = '<td class="tiny">' + esc(a.ts) + '</td><td>' + esc(a.section) + '</td>' +
+        '<td><b>' + a.score + '</b><span class="mut tiny">/' + a.total + '</span></td>' +
+        '<td>' + a.acc + '%</td>' +
+        '<td><button data-act="review" data-ts="' + esc(a.tsRaw) + '">Review</button></td>';
+      tb.appendChild(tr);
+    }
+    if (list[0]) $('stAcc').textContent = list[0].acc + '%';
+  }, function () {});
+}
+function resumeNotice() {
+  $('resumeBox').className = 'note good';
+  var left = Math.max(0, Math.round((S.started + S.minutes * 60000 - Date.now()) / 1000));
+  $('resumeNote').textContent = 'Attempt in progress on this device (' + S.paper.length +
+    ' questions, ' + Math.floor(left / 60) + 'm ' + (left % 60) + 's left).';
+}
+function fillSectionSelect(sel, withAll) {
+  var cur = sel.value;
+  sel.innerHTML = '';
+  if (withAll) sel.appendChild(el('option', null, 'All sections'));
+  if (withAll) sel.options[0].value = 'all';
+  var secs = ['Bio', 'Chem', 'Phy', 'Math'];
+  for (var i = 0; i < secs.length; i++) {
+    var o = el('option'); o.value = secs[i]; o.textContent = secs[i] + (secs[i] === 'Bio' ? ' (Biology)' : secs[i] === 'Chem' ? ' (Chemistry)' : secs[i] === 'Phy' ? ' (Physics)' : ' (Math)');
+    sel.appendChild(o);
+  }
+  if (cur) sel.value = cur;
+}
+function topicList(section) {
+  var out = [];
+  var sy = S.syllabus || {};
+  if (section === 'Bio' && sy.Bio) {
+    var g = sy.Bio;
+    var groups = (g.Z || []).concat(g.B || []);
+    for (var i = 0; i < groups.length; i++) out.push(groups[i]);
+    return out;
+  }
+  var arr = sy[section] || [];
+  for (var j = 0; j < arr.length; j++) out.push(arr[j]);
+  return out;
+}
+/** Fills a topic <select> (mock filter) or the <datalist> behind a topic <input>
+ *  (teacher forms). Inputs keep whatever the teacher already typed. */
+function fillTopicSelect(sel, section) {
+  if (!sel) return;
+  var isInput = sel.tagName === 'INPUT';
+  var box = isInput ? document.getElementById(sel.getAttribute('list')) : sel;
+  if (!box) return;
+  var keep = isInput ? sel.value : sel.value;
+  box.innerHTML = '';
+  if (!isInput) {
+    var o0 = el('option', null, 'Any topic in this section'); o0.value = ''; box.appendChild(o0);
+  }
+  var list = topicList(section);
+  for (var i = 0; i < list.length; i++) {
+    var o = el('option');
+    o.value = list[i][0];
+    o.textContent = list[i][0] + ' - ' + list[i][1];
+    box.appendChild(o);
+  }
+  if (keep) sel.value = keep;
+}
+
+/* ---------------- exam engine ---------------- */
+function startMock() {
+  busy($('btnStart'), true);
+  api('startMock', S.token, { section: $('mk-section').value, topic: $('mk-topic').value,
+    count: Number($('mk-count').value), minutes: Number($('mk-min').value), shuffleOptions: true })
+    .then(function (r) {
+      busy($('btnStart'), false);
+      if (guard(r, 'startMsg')) return;
+      if (!r.paper || !r.paper.length) { msg('startMsg', 'The server returned an empty paper.', 'err'); return; }
+      S.paper = r.paper; S.ans = {}; S.mk = {}; S.cur = 0; S.minutes = r.minutes;
+      S.started = Date.now();
+      S.source = r.source;
+      if (r.meta) { S.syllabus = r.meta.syllabus || S.syllabus; }
+      save();
+      show('exam');
+      renderQ(); startTimer();
+      if (r.source !== 'Questions') toast('Question tab is light (' + r.source + ' bank used).');
+    }, function (e) { busy($('btnStart'), false); msg('startMsg', esc(e.message || e), 'err'); });
+}
+function startTimer() {
+  stopTimer();
+  S.timer = setInterval(tick, 500);
+  tick();
+}
+function stopTimer() { if (S.timer) { clearInterval(S.timer); S.timer = null; } }
+function tick() {
+  var left = Math.round((S.started + S.minutes * 60000 - Date.now()) / 1000);
+  var t = $('ex-timer');
+  if (left <= 0) {
+    t.textContent = '00:00'; t.className = 'timer low';
+    stopTimer();
+    toast('Time is up - submitting your answers.');
+    doSubmit(true);
+    return;
+  }
+  var m = Math.floor(left / 60), s = left % 60;
+  t.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  t.className = 'timer' + (left < 60 ? ' low' : '');
+}
+function renderQ() {
+  var p = S.paper || []; if (!p.length) return;
+  if (S.cur >= p.length) S.cur = p.length - 1;
+  var q = p[S.cur];
+  $('ex-num').textContent = (S.cur + 1) + '/' + p.length;
+  $('ex-sec').textContent = q.section || '';
+  $('ex-topic').textContent = q.topic || 'untagged';
+  $('ex-q').innerHTML = esc(q.question);
+  var ib = $('ex-imgbox');
+  ib.innerHTML = q.image ? '<img class="fignum" alt="figure for this question" src="' + esc(q.image) + '">' : '';
+  var ob = $('ex-opts'); ob.innerHTML = '';
+  var slots = ['A', 'B', 'C', 'D'];
+  var chosen = S.ans[q.i] || 0;
+  for (var i = 0; i < 4; i++) {
+    var txt = q.opts[slots[i]];
+    if (txt === undefined || txt === '') continue;
+    var b = el('button', 'opt' + (chosen === i + 1 ? ' sel' : ''));
+    b.type = 'button';
+    b.innerHTML = '<b class="k">' + esc(q.order.charAt(i)) + '</b><span>' + esc(txt) + '</span>';
+    b.onclick = (function (slot) {
+      return function () {
+        S.ans[q.i] = (S.ans[q.i] === slot) ? 0 : slot;
+        if (!S.ans[q.i]) delete S.ans[q.i];
+        save(); renderQ(); renderPalette();
+      };
+    })(i + 1);
+    ob.appendChild(b);
+  }
+  $('btnMark').textContent = S.mk[q.i] ? 'Unmark' : 'Mark for review';
+  var done = 0; for (var k in S.ans) if (S.ans[k]) done++;
+  $('ex-progress').textContent = done + ' answered · ' + p.length + ' total';
+  var nm = Object.keys(S.mk).length;
+  $('ex-marked').className = 'pill wait' + (nm ? '' : ' hidden');
+  $('ex-marked').textContent = nm + ' marked';
+  $('btnPrev').disabled = S.cur === 0;
+  renderPalette();
+}
+function renderPalette() {
+  var pal = $('palette'); pal.innerHTML = '';
+  var p = S.paper || [];
+  for (var i = 0; i < p.length; i++) {
+    var b = el('button', (S.ans[i] ? 'done' : '') + (S.mk[i] ? ' mk' : '') + (i === S.cur ? ' now' : ''));
+    b.textContent = i + 1;
+    b.title = 'Question ' + (i + 1);
+    b.onclick = (function (n) { return function () { S.cur = n; save(); renderQ(); }; })(i);
+    pal.appendChild(b);
+  }
+}
+function doSubmit(auto) {
+  var p = S.paper || [];
+  var answered = 0, i;
+  for (i = 0; i < p.length; i++) if (S.ans[p[i].i]) answered++;
+  if (!auto) {
+    var flagged = p.length - answered;
+    if (flagged > 0 && !confirm(flagged + ' question(s) are not answered. Submit anyway?')) return;
+  }
+  busy($('btnSubmitExam'), true);
+  stopTimer();
+  var items = [];
+  for (i = 0; i < p.length; i++) {
+    var q = p[i];
+    // Only "which card did I tap" is sent: the server already holds the question
+    // identity and the option order, so the marking cannot be talked into anything.
+    items.push({ i: q.i, question: q.question, chosen: S.ans[q.i] || 0 });
+  }
+  api('submitMock', S.token, { ts: Date.now(), items: items, answers: S.ans })
+    .then(function (r) {
+      busy($('btnSubmitExam'), false);
+      if (guard(r)) { clearAttempt(); show('student'); return; }
+      S.lastResult = r;
+      clearAttempt();
+      renderResult(r);
+      show('result');
+    }, function (e) {
+      busy($('btnSubmitExam'), false);
+      toast('Submit failed: ' + esc(e.message || e));
+      startTimer();
+    });
+}
+
+/* ---------------- result + review ---------------- */
+function statCard(label, value, color) {
+  return '<div class="stat"><b style="' + (color ? 'color:' + color : '') + '">' + esc(value) + '</b><span>' + esc(label) + '</span></div>';
+}
+function renderResult(r) {
+  $('rs-title').innerHTML = 'Score: <span style="color:#8ab0ff">' + esc(r.score) + '</span> <span class="mut">/ ' + esc(r.total) + ' pts</span>';
+  $('rs-sub').textContent = 'Marking: +1 correct, -0.25 wrong, 0 skipped. Saved to the Attempts tab at ' + new Date().toLocaleString();
+  var acc = r.total ? Math.round(r.correct / Math.max(1, r.correct + r.wrong) * 1000) / 10 : 0;
+  $('rs-stats').innerHTML = statCard('Correct', r.correct, '#22c55e') + statCard('Wrong', r.wrong, '#ef4444') +
+    statCard('Skipped', r.skipped, '#9aa3c0') + statCard('Accuracy', acc + '%', '#4f7cff');
+  var w = '';
+  if (r.overtime) w += '<div class="note err" style="margin-top:10px">You submitted after the deadline, so the server recorded the attempt as late.</div>';
+  if (r.notFound) w += '<div class="note err" style="margin-top:10px">' + r.notFound + ' question(s) were not found in the bank when scoring (an admin edited the bank mid-test); they were counted as not attempted.</div>';
+  $('rs-warn').innerHTML = w;
+  $('rs-mail').innerHTML = r.mailError ? 'Feedback email failed: ' + esc(r.mailError)
+    : (r.mailSkipped ? 'Feedback email is switched off for this portal - everything below is in your account too.'
+                     : 'A feedback email with these explanations was sent to you.');
+  renderReview($('rs-list'), r.perItem || []);
+  $('rs-onlyWrong').onchange = function () { renderReview($('rs-list'), (S.lastResult && S.lastResult.perItem) || []); };
+}
+function renderReview(box, items) {
+  box.innerHTML = '';
+  if (!items.length) { box.innerHTML = '<div class="mut tiny">No stored responses for this attempt.</div>'; return; }
+  var onlyWrong = $('rs-onlyWrong') && $('rs-onlyWrong').checked;
+  var head = el('div', 'mut tiny', items.length + ' items · <span style="color:#22c55e">green</span> = correct, <span style="color:#ef4444">red</span> = wrong, grey = not attempted');
+  box.appendChild(head);
+  var L = ['A', 'B', 'C', 'D'];
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    if (onlyWrong && it.state === 'correct') continue;
+    var card = el('div', 'item ' + it.state);
+    var label = { correct: 'Correct +1', wrong: 'Wrong -0.25', skipped: 'Not attempted 0', missing: 'Not in bank' }[it.state] || it.state;
+    var body = '<h4><span class="st">Q' + (Number(it.i) + 1) + '.</span> ' + esc(label) +
+      ' <span class="tag">' + esc(it.topic || '') + '</span></h4>' + '<div>' + esc(it.question) + '</div>';
+    if (it.image) body += '<img class="fignum" alt="figure" src="' + esc(it.image) + '">';
+    if (it.opts) {
+      body += '<div style="margin-top:8px">';
+      for (var k = 0; k < 4; k++) {
+        var txt = it.opts[L[k]];
+        if (txt === undefined || txt === '') continue;
+        var cls = 'opt' + (it.correct === L[k] ? ' right' : '') + (it.chosen === L[k] ? (it.state === 'correct' ? ' right' : ' wrong') : '');
+        body += '<div class="' + cls + '"><b class="k">' + L[k] + '</b><span>' + esc(txt) +
+          (it.chosen === L[k] ? ' <span class="mut tiny">your answer</span>' : '') + '</span></div>';
+      }
+      body += '</div>';
+    } else {
+      body += '<div class="tiny" style="margin-top:6px">Your answer: <b>' + esc(it.chosen || 'none') +
+        '</b> · Correct: <b style="color:#22c55e">' + esc(it.correct || '?') + '</b></div>';
+    }
+    if (it.explanation) body += '<div class="expl">' + esc(it.explanation) + '</div>';
+    card.innerHTML = body;
+    box.appendChild(card);
+  }
+}
+function openReview(ts, userId, boxId) {
+  api('getAttempt', S.token, ts, userId).then(function (r) {
+    if (guard(r)) return;
+    var box = $(boxId);
+    box.innerHTML = '';
+    var a = r.attempt;
+    var head = el('div', 'card');
+    head.innerHTML = '<div class="row"><h2 style="margin:0">Attempt review &mdash; ' + esc(a.name) + '</h2>' +
+      '<span class="spacer"></span><button data-act="closereview" data-box="' + boxId + '">Close</button></div>' +
+      '<div class="mut tiny">' + esc(a.ts) + ' · section ' + esc(a.section) + '</div>' +
+      '<div class="grid g4" style="margin-top:10px">' + statCard('Score', a.score + '/' + a.total) +
+      statCard('Correct', a.correct, '#22c55e') + statCard('Wrong', a.wrong, '#ef4444') + statCard('Skipped', a.skipped) + '</div>';
+    box.appendChild(head);
+    var wrap = el('div', 'card');
+    wrap.appendChild(el('h2', null, 'Answers'));
+    var inner = el('div');
+    wrap.appendChild(inner);
+    box.appendChild(wrap);
+    renderReview(inner, r.items || []);
+  }, function (e) { toast('Could not load that attempt: ' + esc(e.message || e)); });
+}
+
+/* ---------------- teacher ---------------- */
+function loadTeacher() {
+  api('adminOverview', S.token).then(function (r) {
+    if (guard(r)) return;
+    T.data = r;
+    var users = r.users || [];
+    var pending = 0, approved = 0;
+    for (var i = 0; i < users.length; i++) { if (users[i].status === 'pending') pending++; else if (users[i].status === 'approved') approved++; }
+    $('t-stats').innerHTML = statCard('Accounts', users.length) + statCard('Waiting for approval', pending, pending ? '#f59e0b' : '') +
+      statCard('Approved', approved, '#22c55e') + statCard('Questions in bank', (r.bank && r.bank.size) || 0, '#4f7cff');
+    $('tt-abs-n').innerHTML = pending ? '<span class="pill wait">' + pending + '</span>' : '';
+    renderApprovals(users);
+    renderStudents(users);
+    renderRecent(r.recent || []);
+    renderBankStats(r.bank);
+    renderSyllabus(r.syllabus);
+    if (r.syllabus) S.syllabus = r.syllabus;
+    fillSectionSelect($('qf-section')); fillTopicSelect($('qf-topic'), $('qf-section').value);
+    fillSectionSelect($('pdf-section')); fillTopicSelect($('pdf-topic'), $('pdf-section').value);
+    $('qf-section').onchange = function () { fillTopicSelect($('qf-topic'), this.value); };
+    $('pdf-section').onchange = function () { fillTopicSelect($('pdf-topic'), this.value); };
+    $('qf-section').value = 'Phy'; fillTopicSelect($('qf-topic'), 'Phy'); $('qf-topic').value = 'P1';
+    loadQuestions();
+  }, function (e) { toast('Teacher data failed: ' + esc(e.message || e)); });
+}
+var T = { data: null, pdfSentences: [], editing: 0 };
+function renderApprovals(users) {
+  var box = $('absList'); box.innerHTML = '';
+  var pend = [];
+  for (var i = 0; i < users.length; i++) if (users[i].status === 'pending') pend.push(users[i]);
+  if (!pend.length) { box.innerHTML = '<div class="note good">Nothing waiting - every registration has been decided.</div>'; return; }
+  for (var k = 0; k < pend.length; k++) {
+    var u = pend[k];
+    box.appendChild(el('div', 'item', '<div class="row"><div><b>' + esc(u.name) + '</b> <span class="mut tiny">' + esc(u.email) +
+      '</span><div class="mut tiny">username ' + esc(u.username || '-') + ' · registered ' + esc(u.created) + '</div></div>' +
+      '<span class="spacer"></span><div class="row">' +
+      '<button class="ok" data-act="approve" data-id="' + esc(u.id) + '">Approve</button>' +
+      '<button class="bad" data-act="reject" data-id="' + esc(u.id) + '">Reject</button></div></div>'));
+  }
+}
+function renderStudents(users) {
+  var tb = $('stdList'); tb.innerHTML = '';
+  if (!users.length) { tb.innerHTML = '<tr><td colspan="9" class="mut tiny">No accounts yet.</td></tr>'; return; }
+  for (var i = 0; i < users.length; i++) {
+    var u = users[i];
+    var st = u.status === 'approved' ? '<span class="pill ok">approved</span>' : u.status === 'pending' ? '<span class="pill wait">pending</span>' : '<span class="pill bad">' + esc(u.status) + '</span>';
+    var act = '<div class="row" style="gap:6px">' +
+      (u.status === 'approved' ? '<button data-act="reject" data-id="' + esc(u.id) + '">Suspend</button>' : '<button class="ok" data-act="approve" data-id="' + esc(u.id) + '">Approve</button>') +
+      '<button data-act="resetdev" data-id="' + esc(u.id) + '">Reset device</button>' +
+      '<button data-act="pw" data-id="' + esc(u.id) + '">New password</button></div>';
+    var tr = el('tr');
+    tr.innerHTML = '<td><b>' + esc(u.name) + '</b></td><td class="tiny">' + esc(u.email) + '</td><td>' + esc(u.role) + '</td><td>' + st +
+      '</td><td class="tiny">' + esc(u.device) + '</td><td class="tiny">' + (u.sessionActive ? '<span class="pill info">active</span>' : 'none') +
+      '</td><td>' + u.attempts + '</td><td>' + (u.best || 0) + '</td><td>' + act + '</td>';
+    tb.appendChild(tr);
+  }
+}
+function renderRecent(list) {
+  var tb = $('recentList'); tb.innerHTML = '';
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="6" class="mut tiny">No attempts recorded yet.</td></tr>'; return; }
+  for (var i = 0; i < list.length; i++) {
+    var a = list[i];
+    var tr = el('tr');
+    tr.innerHTML = '<td class="tiny">' + esc(a.ts) + '</td><td>' + esc(a.name) + '<div class="mut tiny">' + esc(a.email) + '</div></td>' +
+      '<td>' + esc(a.section) + '</td><td><b>' + a.score + '</b><span class="mut tiny">/' + a.total + '</span></td><td>' + a.acc + '%</td>' +
+      '<td><button data-act="reviewT" data-ts="' + esc(a.ts) + '" data-uid="' + esc(a.userId) + '">Review</button></td>';
+    tb.appendChild(tr);
+  }
+}
+function renderBankStats(bank) {
+  var s = '';
+  if (bank && bank.bySection) {
+    for (var k in bank.bySection) s += '<span class="tag">' + esc(k) + ': ' + bank.bySection[k] + '</span>';
+  }
+  $('bankStats').innerHTML = (bank && bank.size ? bank.size + ' questions · ' : '0 questions · ') + s;
+}
+function renderSyllabus(sy) {
+  if (!sy) return;
+  var box = $('syllabusOut'); box.innerHTML = '';
+  var secs = ['Bio', 'Chem', 'Phy', 'Math'];
+  for (var i = 0; i < secs.length; i++) {
+    var s = secs[i], list = [];
+    if (sy[s] && sy[s].Z) { list = sy[s].Z.concat(sy[s].B); }
+    else if (sy[s]) { list = sy[s]; }
+    var html = '<b>' + s + '</b> ';
+    for (var j = 0; j < list.length; j++) html += '<span class="tag">' + esc(list[j][0]) + ' ' + esc(list[j][1]) + '</span>';
+    box.appendChild(el('div', null, html));
+  }
+}
+function loadQuestions() {
+  var f = { section: $('qFilter-sec').value, q: $('qFilter-q').value };
+  api('listQuestions', S.token, f).then(function (r) {
+    if (guard(r)) return;
+    var box = $('qList'); box.innerHTML = '';
+    var list = r.questions || [];
+    if (!list.length) { box.innerHTML = '<div class="note">No questions match. Use bulk upload, the form above, or "Seed default bank".</div>'; return; }
+    box.appendChild(el('div', 'mut tiny', 'Showing ' + list.length + ' of ' + r.meta.size + ' in the bank (row numbers are the Questions tab rows).'));
+    for (var i = 0; i < list.length; i++) {
+      var q = list[i];
+      var im = q.hasImage ? '<span class="pill info">image</span>' : '';
+      var div = el('div', 'item');
+      div.innerHTML = '<div class="row"><div style="flex:1;min-width:200px"><b>' + esc(q.question) + '</b>' +
+        '<div class="mut tiny">row ' + q.row + ' · ' + esc(q.section) + ' · ' + esc(q.topic || 'no topic') + ' · answer ' + esc(q.answer) + ' ' + im + '</div>' +
+        '<div class="tiny" style="margin-top:4px">A) ' + esc(q.A) + ' &nbsp; B) ' + esc(q.B) + ' &nbsp; C) ' + esc(q.C) + ' &nbsp; D) ' + esc(q.D) + '</div>' +
+        (q.explanation ? '<div class="expl">' + esc(q.explanation) + '</div>' : '') + '</div>' +
+        '<div class="row"><button data-act="editq" data-row="' + q.row + '">Edit</button>' +
+        '<button class="bad" data-act="delq" data-row="' + q.row + '">Delete</button></div></div>';
+      box.appendChild(div);
+      T.list = list;
+    }
+  }, function (e) { toast('Bank load failed: ' + esc(e.message || e)); });
+}
+function questionFormValues(prefix) {
+  return { section: $(prefix + 'section').value, topic: $(prefix + 'topic').value,
+    question: $(prefix + 'question').value.trim(), A: $(prefix + 'a').value.trim(), B: $(prefix + 'b').value.trim(),
+    C: $(prefix + 'c').value.trim(), D: $(prefix + 'd').value.trim(), answer: $(prefix + 'answer').value,
+    explanation: $(prefix + 'expl') ? $(prefix + 'expl').value.trim() : '', image: $(prefix + 'image') ? $(prefix + 'image').value.trim() : '' };
+}
+function saveQuestion(prefix, row, msgId, after) {
+  var q = questionFormValues(prefix);
+  if (row) q.row = row;
+  busy($(prefix === 'qf-' ? 'btnSaveQ' : 'btnPdfSave'), true);
+  api('saveQuestion', S.token, q).then(function (r) {
+    busy($(prefix === 'qf-' ? 'btnSaveQ' : 'btnPdfSave'), false);
+    if (guard(r, msgId)) return;
+    if (r.ok) {
+      msg(msgId, esc(r.message), 'ok');
+      if (after) after();
+      loadTeacher();
+    }
+  }, function (e) { busy($(prefix === 'qf-' ? 'btnSaveQ' : 'btnPdfSave'), false); msg(msgId, esc(e.message || e), 'err'); });
+}
+function resetQuestionForm() {
+  ['question', 'a', 'b', 'c', 'd', 'expl', 'image'].forEach(function (k) { $('qf-' + k).value = ''; });
+  $('qf-imgprev').innerHTML = ''; $('qf-editing').className = 'pill info hidden'; T.editing = 0;
+}
+function fillEditForm(q) {
+  $('qf-section').value = q.section; $('qf-topic').value = q.topic || '';
+  $('qf-question').value = q.question; $('qf-a').value = q.A; $('qf-b').value = q.B;
+  $('qf-c').value = q.C; $('qf-d').value = q.D; $('qf-answer').value = q.answer || 'A';
+  $('qf-expl').value = q.explanation || ''; $('qf-image').value = '';
+  $('qf-imgprev').innerHTML = q.hasImage ? '<img class="fignum" src="' + esc(q.image) + '">' : '';
+  $('qf-editing').className = 'pill info'; $('qf-editing').textContent = 'editing row ' + q.row;
+  T.editing = q.row;
+}
+
+/* ---------------- bulk upload ---------------- */
+function fileToB64(file, cb, errb) {
+  var fr = new FileReader();
+  fr.onload = function () { cb(String(fr.result).split(',')[1] || '', file); };
+  fr.onerror = function () { errb(new Error('Could not read that file.')); };
+  fr.readAsDataURL(file);
+}
+function uploadBankFile() {
+  var f = $('upFile').files && $('upFile').files[0];
+  if (!f) { msg('upMsg', 'Choose a .csv or .xlsx file first.', 'err'); return; }
+  busy($('btnUpload'), true);
+  fileToB64(f, function (b64, file) {
+    api('importQuestions', S.token, { name: file.name, mime: file.type, b64: b64 }).then(function (r) {
+      busy($('btnUpload'), false);
+      if (guard(r, 'upMsg')) return;
+      if (r.ok) {
+        var extra = (r.problems && r.problems.length) ? '<div class="mut tiny">Skipped: ' + r.problems.map(esc).join('<br>') + '</div>' : '';
+        msg('upMsg', esc(r.message) + extra, 'ok');
+        $('upFile').value = '';
+        loadTeacher();
+      }
+    }, function (e) { busy($('btnUpload'), false); msg('upMsg', esc(e.message || e), 'err'); });
+  }, function (e) { busy($('btnUpload'), false); msg('upMsg', esc(e.message || e), 'err'); });
+}
+function downloadText(name, text, mime) {
+  try {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+    return;
+  } catch (e) {}
+  var a2 = el('a'); a2.href = 'data:' + (mime || 'text/plain') + ';charset=utf-8,' + encodeURIComponent(text);
+  a2.download = name; document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+}
+
+/* ---------------- image upload (questions + MAT figures) ---------------- */
+function pickImage(file, cb) {
+  if (!file) { cb(new Error('No file selected.')); return; }
+  if (!/^image\//.test(file.type || '')) { cb(new Error('Please choose an image file (PNG/JPEG/WebP).')); return; }
+  var once = function (fn) { var done = false; return function () { if (done) return; done = true; fn.apply(null, arguments); }; };
+  var finish = once(function (err, uri, info) { cb(err, uri, info); });
+  var load = function (src, revoke) {
+    var img = new Image();
+    img.onload = function () {
+      if (revoke) { try { URL.revokeObjectURL(src); } catch (e) {} }
+      var MAX = 1000, w = img.width || 900, h = img.height || 600;
+      if (w > MAX || h > MAX) { var k = MAX / Math.max(w, h); w = Math.round(w * k); h = Math.round(h * k); }
+      var out = '';
+      try {
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d');
+        if (ctx) {                                  // white ground so dark figures stay readable in email
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          out = c.toDataURL('image/jpeg', 0.82);
+          if (out.length * 0.75 > 120000) out = c.toDataURL('image/jpeg', 0.6);
+        }
+      } catch (e) { out = ''; }
+      if (!out) { finish(new Error('Could not re-encode that image (try a smaller JPEG, or paste a URL instead).')); return; }
+      finish(null, out, { w: w, h: h, kb: Math.round(out.length * 0.75 / 1024) });
+    };
+    img.onerror = function () {
+      if (revoke) { try { URL.revokeObjectURL(src); } catch (e) {} }
+      finish(new Error('That image could not be opened.'));
+    };
+    img.src = src;
+  };
+  if (window.URL && URL.createObjectURL) {
+    load(URL.createObjectURL(file), true);
+  } else if (window.FileReader) {
+    if (file.size > 200000) { finish(new Error('Image is larger than 200 KB - compress it first, or paste a URL.')); return; }
+    var fr = new FileReader();
+    fr.onload = function () { load(String(fr.result)); };
+    fr.onerror = function () { finish(new Error('The file could not be read.')); };
+    fr.readAsDataURL(file);
+  } else {
+    finish(new Error('This browser cannot read image files - paste an image URL instead.'));
+  }
+}
+function bindImagePick() {
+  $('btnImgPick').onclick = function () { $('qf-imgfile').click(); };
+  $('qf-imgfile').onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    pickImage(f, function (err, uri, info) {
+      if (err) { msg('qfMsg', esc(err.message), 'err'); return; }
+      $('qf-image').value = uri;
+      $('qf-imgprev').innerHTML = '<div class="row"><img class="fignum" style="max-width:220px" src="' + esc(uri) + '">' +
+        '<span class="mut tiny">' + info.w + 'x' + info.h + ' · ~' + info.kb + ' KB stored inside the sheet cell and inhaled by the email.<br>' +
+        '<button data-act="dropimg">Remove image</button></span></div>';
+      msg('qfMsg', 'Image attached. It will show in the quiz, the review and the feedback email.', 'ok');
+    });
+  };
+}
+function setImageBox(boxId, uri) { $(boxId).value = uri || ''; }
+
+/* ---------------- PDF-guided builder ---------------- */
+var PDFJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+var PDFWORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function loadPdfJs() {
+  return new Promise(function (res, rej) {
+    if (window.pdfjsLib) return res(window.pdfjsLib);
+    var s = document.createElement('script');
+    s.src = PDFJS_CDN; s.async = true;
+    s.onload = function () {
+      if (!window.pdfjsLib) return rej(new Error('pdf.js loaded but is missing'));
+      try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFWORKER; } catch (e) {}
+      res(window.pdfjsLib);
+    };
+    s.onerror = function () { rej(new Error('Could not load the PDF reader from the CDN (offline?).')); };
+    document.head.appendChild(s);
+  });
+}
+function splitSentences(text) {
+  var clean = String(text).replace(/\s+/g, ' ').trim();
+  var out = [], buf = '';
+  for (var i = 0; i < clean.length; i++) {
+    var ch = clean.charAt(i);
+    buf += ch;
+    if ((ch === '.' || ch === '!' || ch === '?' || ch === ':') && clean.charAt(i + 1) === ' ' && /[A-Z0-9("]/.test(clean.charAt(i + 2) || 'A')) {
+      if (buf.replace(/[^A-Za-z0-9]/g, '').length > 25 && !/\b(No|Vol|Fig|Eq|approx|Dr|Mr|Prof|e\.g|i\.e)\.$/i.test(buf.trim())) { out.push(buf.trim()); buf = ''; }
+    }
+    if (buf.length > 700) { out.push(buf.trim()); buf = ''; }
+  }
+  if (buf.replace(/[^A-Za-z0-9]/g, '').length > 25) out.push(buf.trim());
+  return out;
+}
+function renderPdfSentences(list) {
+  T.pdfSentences = list;
+  $('pdf-count').textContent = list.length ? '(' + list.length + ' lines, click one to insert)' : '';
+  var box = $('pdfOut'); box.innerHTML = '';
+  if (!list.length) { box.innerHTML = '<div class="mut tiny">No readable text lines. If this PDF is a scan, type the question yourself below.</div>'; return; }
+  for (var i = 0; i < list.length; i++) {
+    var b = el('button', 'para', esc(list[i]));
+    b.type = 'button';
+    b.onclick = (function (n) { return function () {
+      var ta = $('pdf-question');
+      var add = list[n].replace(/^(Q\.?\s*|Question\s*\d+[:.\s]*)/i, '').trim();
+      ta.value = (ta.value ? ta.value.replace(/\s+$/, ' ') : '') + add + (/[.?!]$/.test(add) ? '' : '?');
+      ta.focus();
+      toast('Sentence inserted - add the four options.');
+    }; })(i);
+    box.appendChild(b);
+  }
+}
+function readPdfClient(file) {
+  $('pdfStatus').innerHTML = '<span class="spin"></span> Reading the PDF in your browser…';
+  var fr = new FileReader();
+  fr.onload = function () {
+    var bytes = new Uint8Array(fr.result);
+    loadPdfJs().then(function (lib) {
+      return lib.getDocument({ data: bytes }).promise;
+    }).then(function (doc) {
+      var jobs = [];
+      for (var p = 1; p <= doc.numPages; p++) jobs.push(doc.getPage(p).then(function (pg) { return pg.getTextContent(); }));
+      return Promise.all(jobs).then(function (texts) {
+        var all = [];
+        for (var t = 0; t < texts.length; t++) {
+          var items = texts[t] && texts[t].items ? texts[t].items : [];
+          var raw = '';
+          for (var k = 0; k < items.length; k++) raw += (items[k].str || '') + (/[.\u2022]$/.test(items[k].str || '') ? ' ' : ' ');
+          all = all.concat(splitSentences(raw));
+        }
+        $('pdfStatus').innerHTML = 'Read ' + doc.numPages + ' page(s) locally - ' + all.length + ' text lines. Nothing was uploaded.';
+        renderPdfSentences(all.slice(0, 400));
+      });
+    }).catch(function (e) {
+      $('pdfStatus').innerHTML = 'In-browser reading failed (' + esc(e.message || e) + '). Try the server button, or paste the text yourself.';
+    });
+  };
+  fr.onerror = function () { $('pdfStatus').textContent = 'Could not read that file.'; };
+  fr.readAsArrayBuffer(file);
+}
+function readPdfServer() {
+  var f = $('pdfFile').files && $('pdfFile').files[0];
+  if (!f) { msg('pdfMsg', 'Choose the PDF first.', 'err'); return; }
+  busy($('btnPdfServer'), true);
+  fileToB64(f, function (b64, file) {
+    api('extractPdfText', S.token, b64, file.name).then(function (r) {
+      busy($('btnPdfServer'), false);
+      if (guard(r, 'pdfMsg')) return;
+      if (!r.ok) { msg('pdfMsg', esc(r.error), 'err'); return; }
+      $('pdfStatus').textContent = 'Server extracted ' + r.chars + ' characters.';
+      renderPdfSentences(splitSentences(r.text).slice(0, 400));
+    }, function (e) { busy($('btnPdfServer'), false); msg('pdfMsg', esc(e.message || e), 'err'); });
+  }, function (e) { busy($('btnPdfServer'), false); msg('pdfMsg', esc(e.message || e), 'err'); });
+}
+
+/* ---------------- events ---------------- */
+function bindEvents() {
+  $('btnStart').onclick = startMock;
+  $('btnNext').onclick = function () { var n = S.paper.length; if (S.cur < n - 1) S.cur++; save(); renderQ(); };
+  $('btnPrev').onclick = function () { if (S.cur > 0) S.cur--; save(); renderQ(); };
+  $('btnClear').onclick = function () { delete S.ans[S.paper[S.cur].i]; save(); renderQ(); };
+  $('btnMark').onclick = function () {
+    var k = S.paper[S.cur].i;
+    if (S.mk[k]) delete S.mk[k]; else S.mk[k] = 1;
+    save(); renderQ();
+  };
+  $('btnSubmitExam').onclick = function () { doSubmit(false); };
+  $('btnBackDash').onclick = function () { show('student'); renderStudentPanel(); refreshMe(); };
+  $('btnRetry').onclick = function () { show('student'); renderStudentPanel(); };
+  $('btnStudent').onclick = function () { show('student'); renderStudentPanel(); refreshMe(); };
+  $('btnTeacher').onclick = function () { if (!isTeacher()) { toast('Teacher rights are needed for that screen.'); return; } show('teacher'); loadTeacher(); };
+  $('btnResume').onclick = function () { show('exam'); renderQ(); startTimer(); };
+  $('btnDropResume').onclick = function () { clearAttempt(); $('resumeBox').className = 'note good hidden'; };
+  $('btnRefreshT').onclick = loadTeacher;
+  var tabs = document.querySelectorAll('#scr-teacher .tabbar button');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].onclick = function () {
+      for (var j = 0; j < tabs.length; j++) tabs[j].className = '';
+      this.className = 'on';
+      var panes = document.querySelectorAll('.tt-pane');
+      for (var k = 0; k < panes.length; k++) panes[k].className = 'tt-pane hidden';
+      var want = document.querySelector('.tt-pane[data-pane="' + this.dataset.tt + '"]');
+      if (want) want.className = 'tt-pane';
+      if (this.dataset.tt === 'sys') loadPortalSettings();
+    };
+  }
+  $('btnSaveQ').onclick = function () { saveQuestion('qf-', T.editing || 0, 'qfMsg', resetQuestionForm); };
+  $('btnResetQ').onclick = resetQuestionForm;
+  $('btnQFilter').onclick = loadQuestions;
+  $('qFilter-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') loadQuestions(); });
+  $('btnUpload').onclick = uploadBankFile;
+  $('btnImportCsv').onclick = function () {
+    var txt = $('csvText').value.trim();
+    if (!txt) { msg('upMsg', 'Paste some CSV rows first.', 'err'); return; }
+    busy($('btnImportCsv'), true);
+    api('importQuestions', S.token, { csv: txt, name: 'pasted.csv' }).then(function (r) {
+      busy($('btnImportCsv'), false);
+      if (guard(r, 'upMsg')) return;
+      if (r.ok) { msg('upMsg', esc(r.message), 'ok'); $('csvText').value = ''; loadTeacher(); }
+    }, function (e) { busy($('btnImportCsv'), false); msg('upMsg', esc(e.message || e), 'err'); });
+  };
+  $('btnTemplate').onclick = function () {
+    downloadText('cee-question-template.csv',
+      'section,topic,question,A,B,C,D,answer,explanation,image\n' +
+      'Phy,P1,"A body moves with constant velocity. The net force on it is","zero","mg","m v","m a","A","Constant velocity means zero acceleration, so F = m a = 0.",\n' +
+      'Bio,Z1,"Which organelle is the site of ATP synthesis?","Ribosome","Mitochondria","Golgi body","Lysosome","B","Mitochondria carry out oxidative phosphorylation.",\n',
+      'text/csv;charset=utf-8');
+  };
+  $('btnExportCsv').onclick = function () {
+    busy($('btnExportCsv'), true);
+    api('exportQuestionsCsv', S.token).then(function (r) {
+      busy($('btnExportCsv'), false);
+      if (guard(r)) return;
+      if (r.ok) { downloadText('cee-question-bank.csv', r.csv, 'text/csv;charset=utf-8'); toast('Downloaded ' + r.count + ' rows.'); }
+    }, function (e) { busy($('btnExportCsv'), false); toast(esc(e.message || e)); });
+  };
+  $('btnSeed').onclick = function () {
+    if (!confirm('Add the built-in default questions to the Questions tab? (Existing rows are kept.)')) return;
+    busy($('btnSeed'), true);
+    api('seedBank', S.token, false).then(function (r) {
+      busy($('btnSeed'), false);
+      if (guard(r)) return;
+      toast(r.ok ? (r.seeded ? 'Seeded ' + r.count + ' questions.' : 'Bank already has questions.') : r.error);
+      loadTeacher();
+    }, function (e) { busy($('btnSeed'), false); toast(esc(e.message || e)); });
+  };
+  function loadPortalSettings() {
+    if (!isTeacher() || !S.token) return;
+    api('getSettings', S.token).then(function (r) {
+      if (!r.ok) return;
+      $('tPortal').value = r.portalUrl || '';
+      $('tSupport').value = r.supportEmail || '';
+    }, function () { /* settings are optional; the saved values still apply */ });
+  }
+  $('btnPortal').onclick = function () {
+    var b = $('btnPortal');
+    busy(b, true);
+    api('saveSettings', S.token, { portalUrl: $('tPortal').value.trim(), supportEmail: $('tSupport').value.trim() }).then(function (r) {
+      busy(b, false);
+      if (guard(r, 'portalMsg')) return;
+      msg('portalMsg', r.ok ? esc(r.message) : esc(r.error), r.ok ? 'ok' : 'err');
+      if (r.ok) toast('Portal settings saved.');
+    }, function (e) { busy(b, false); msg('portalMsg', esc(e.message || e), 'err'); });
+  };
+  $('btnHealth').onclick = function () {
+    busy($('btnHealth'), true);
+    api('health').then(function (r) {
+      busy($('btnHealth'), false);
+      $('healthOut').className = 'mono scroller';
+      $('healthOut').textContent = JSON.stringify(r, null, 2);
+      var hn = $('healthNote');
+      if (hn) hn.innerHTML = !r.ok ? ''
+        : /spreadsheets/.test(r.portalUrl || '') || !r.portalUrl
+          ? 'No portal link yet: students get no link in their emails. Paste your <code>/exec</code> URL into <b>Portal link &amp; support</b> below.'
+          : 'Portal link in emails: ' + esc(r.portalUrl) + (r.mail ? ' &middot; mail sent as ' + esc(r.mail.from) + (r.mail.aliasAccepted === 'not tried yet' ? ' (not tried yet)' : (r.mail.aliasAccepted === 'yes' ? '' : ' \u2014 ' + esc(r.mail.aliasAccepted))) : '');
+    }, function (e) { busy($('btnHealth'), false); $('healthOut').textContent = String(e.message || e); $('healthOut').className = 'mono scroller'; });
+  };
+  $('btnDanger').onclick = function () {
+    if (!confirm('This deletes ALL users, attempts and responses. The question bank stays.')) return;
+    busy($('btnDanger'), true);
+    api('resetPortal', S.token, $('dangerPhrase').value.trim()).then(function (r) {
+      busy($('btnDanger'), false);
+      if (guard(r, 'dangerMsg')) return;
+      msg('dangerMsg', r.ok ? esc(r.message) + ' Please log in again.' : esc(r.error), r.ok ? 'ok' : 'err');
+      if (r.ok) setTimeout(function () { forceLogin('Data cleared. Log in again as a teacher.'); }, 1200);
+    }, function (e) { busy($('btnDanger'), false); msg('dangerMsg', esc(e.message || e), 'err'); });
+  };
+  $('pdfFile').onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    $('pdfStatus').textContent = 'Opening ' + f.name + '…';
+    readPdfClient(f);
+  };
+  $('btnPdfServer').onclick = readPdfServer;
+  $('btnUseSelection').onclick = function () {
+    var t = String(window.getSelection()).trim();
+    if (!t) { msg('pdfMsg', 'Highlight some text in the list first (or click a line).', 'err'); return; }
+    $('pdf-question').value = t;
+    msg('pdfMsg', 'Inserted ' + t.length + ' characters from your highlight.', 'ok');
+  };
+  $('btnPdfSave').onclick = function () {
+    var q = { section: $('pdf-section').value, topic: $('pdf-topic').value, question: $('pdf-question').value.trim(),
+      A: $('pdf-a').value.trim(), B: $('pdf-b').value.trim(), C: $('pdf-c').value.trim(), D: $('pdf-d').value.trim(),
+      answer: $('pdf-answer').value, explanation: $('pdf-expl').value.trim(), image: '' };
+    if (!q.question) { msg('pdfMsg', 'Insert or type a question stem first.', 'err'); return; }
+    busy($('btnPdfSave'), true);
+    api('saveQuestion', S.token, q).then(function (r) {
+      busy($('btnPdfSave'), false);
+      if (guard(r, 'pdfMsg')) return;
+      if (r.ok) {
+        msg('pdfMsg', esc(r.message) + ' Saved into the Questions tab.', 'ok');
+        ['question', 'a', 'b', 'c', 'd', 'expl'].forEach(function (k) { $('pdf-' + k).value = ''; });
+        loadTeacher();
+      }
+    }, function (e) { busy($('btnPdfSave'), false); msg('pdfMsg', esc(e.message || e), 'err'); });
+  };
+  $('btnPdfToForm').onclick = function () {
+    $('qf-section').value = $('pdf-section').value;
+    $('qf-topic').value = $('pdf-topic').value;
+    $('qf-question').value = $('pdf-question').value;
+    ['a', 'b', 'c', 'd'].forEach(function (k) { $('qf-' + k).value = $('pdf-' + k).value; });
+    $('qf-answer').value = $('pdf-answer').value;
+    $('qf-expl').value = $('pdf-expl').value;
+    var panes = document.querySelectorAll('#scr-teacher .tabbar button');
+    if (panes[2]) panes[2].click();
+    toast('Copied into the full form - add a figure image if needed.');
+  };
+  fillSectionSelect($('qFilter-sec'), true);
+  $('qFilter-sec').onchange = loadQuestions;
+
+  /* delegated buttons inside tables/lists */
+  document.addEventListener('click', function (ev) {
+    var b = ev.target;
+    while (b && b !== document.body && !(b.dataset && b.dataset.act)) b = b.parentNode;
+    if (!b || !b.dataset || !b.dataset.act) return;
+    var act = b.dataset.act, id = b.dataset.id, row = b.dataset.row;
+    if (act === 'relogin') { forceLogin('Please log in again.'); return; }
+    if (act === 'dropimg') { $('qf-image').value = ''; $('qf-imgprev').innerHTML = ''; return; }
+    if (act === 'closereview') { $(b.dataset.box).innerHTML = ''; return; }
+    if (act === 'approve' || act === 'reject') {
+      busy(b, true);
+      api('setStatus', S.token, id, act === 'approve' ? 'approved' : 'rejected').then(function (r) {
+        busy(b, false);
+        if (guard(r)) return;
+        toast(r.ok ? r.message : r.error);
+        loadTeacher(); refreshMe();
+      }, function (e) { busy(b, false); toast(esc(e.message || e)); });
+      return;
+    }
+    if (act === 'resetdev') {
+      if (!confirm('Clear this student\u2019s device lock so they can log in from a new device?')) return;
+      busy(b, true);
+      api('resetDevice', S.token, id).then(function (r) {
+        busy(b, false);
+        if (guard(r)) return;
+        toast(r.ok ? r.message : r.error);
+        loadTeacher();
+      }, function (e) { busy(b, false); toast(esc(e.message || e)); });
+      return;
+    }
+    if (act === 'pw') {
+      var pw = prompt('New temporary password (min 6 chars). It will be emailed to the student:', 'cee12345');
+      if (!pw) return;
+      busy(b, true);
+      api('resetPassword', S.token, id, pw).then(function (r) {
+        busy(b, false);
+        if (guard(r)) return;
+        toast(r.ok ? r.message : r.error);
+      }, function (e) { busy(b, false); toast(esc(e.message || e)); });
+      return;
+    }
+    if (act === 'review') { openReview(b.dataset.ts, '', 'reviewStd'); return; }
+    if (act === 'reviewT') { openReview(b.dataset.ts, b.dataset.uid, 'reviewTch'); return; }
+    if (act === 'editq') {
+      var list = (T && T.list) || [];
+      for (var i = 0; i < list.length; i++) if (String(list[i].row) === String(row)) { fillEditForm(list[i]); toast('Loaded row ' + row + ' into the form - scroll up to edit.'); break; }
+      return;
+    }
+    if (act === 'delq') {
+      if (!confirm('Delete question row ' + row + ' from the Questions tab?')) return;
+      busy(b, true);
+      api('deleteQuestion', S.token, row).then(function (r) {
+        busy(b, false);
+        if (guard(r)) return;
+        toast(r.ok ? r.message : r.error);
+        loadQuestions();
+      }, function (e) { busy(b, false); toast(esc(e.message || e)); });
+      return;
+    }
+  });
+}
+
+/* ---------------- boot ---------------- */
+/** Shown when there is no google.script.run: this file was published somewhere
+ *  that cannot run it. __PORTAL_URL__ is filled in by doGet()/brandHtml_(). */
+function offlineNotice() {
+  var raw = '__PORTAL_URL__';
+  var link = (raw.indexOf('__') < 0 && /^https:\/\//.test(raw)) ? raw : '';
+  var box = el('div', '', '<div class="card" style="max-width:520px;margin:22px auto">' +
+    '<h1>Open the portal from its own link</h1>' +
+    '<p class="mut">This is a plain copy of the portal page. Accounts, marking and email all run ' +
+    'inside the Google Apps Script web app, so a static copy has no server to talk to and the form ' +
+    'below cannot work.</p>' +
+    (link ? '<p><a href="' + esc(link) + '" style="display:inline-block;padding:12px 16px;border-radius:10px;' +
+      'background:#4f7cff;color:#fff;font-weight:700;text-decoration:none">Open the portal</a></p>'
+      : '<p class="tiny mut">Owner: in Apps Script use <b>Deploy &rarr; Web app</b> and share that ' +
+        '<code>/exec</code> URL (or set it in Teacher &rarr; System &rarr; Portal link).</p>') +
+    '</div>');
+  box.id = 'offlineNotice';
+  box.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0f1220;color:#e8ebff;overflow:auto;padding:0 12px';
+  document.body.appendChild(box);
+  var auth = $('scr-auth');
+  if (auth) auth.className = 'hidden';
+}
+
+function boot() {
+  if (!RUN) { offlineNotice(); return; }
+  var sl = $('supportLine');
+  if (sl && sl.innerHTML.indexOf('__SUPPORT') >= 0) sl.className = 'hidden';
+  load();
+  ensureDev();
+  initAuth();
+  bindEvents();
+  bindImagePick();
+  var holder = el('div', 'card hidden', '');
+  holder.id = 'reviewStd';
+  $('scr-student').appendChild(holder);
+  var holder2 = el('div', 'hidden');
+  holder2.id = 'reviewTch';
+  document.querySelector('.tt-pane[data-pane="std"]').appendChild(holder2);
+  fillSectionSelect($('qFilter-sec'), true);
+  if (S.token) {
+    show('student');
+    api('me', S.token).then(function (r) {
+      if (guard(r)) return;
+      S.user = r.user; save();
+      afterLogin();
+    }, function (e) { forceLogin(e.message || e); });
+  } else {
+    show('auth');
+  }
+  window.addEventListener('beforeunload', function (e) {
+    if (S.paper && S.started && document.getElementById('scr-exam').className === '') {
+      e.preventDefault(); e.returnValue = 'Your mock is still running. Leave this tab and the answers stay saved, but the timer keeps going.';
+    }
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+/* Debug handle: window.__cee.state (live app state), .splitSentences, .api(name,...)
+   - handy in the browser console and used by the project's UI tests. */
+window.__cee = {
+  state: S,
+  splitSentences: splitSentences,
+  topicList: topicList,
+  api: function (name) { return api.apply(null, arguments); }
+};
+})();
+</script>
+<div class="card" style="text-align:center;padding:16px;margin-top:20px">
+  <p class="mut tiny" style="margin:0">Powered by <a href="https://www.cprecnepal.org.np" target="_blank" rel="noopener">CPREC Nepal</a></p>
+  <p class="mut tiny" style="margin:8px 0 0"><a href="https://www.facebook.com/ceenotes01" target="_blank" rel="noopener" style="color:#4f7cff;text-decoration:none">Follow us on Facebook</a></p>
+</div>
+</body>
+</html>

@@ -5,19 +5,52 @@ no card. Whole deploy is ~5 minutes.
 
 ---
 
+## 0. Your live deployment (checked 5 Sep 2026)
+
+**Portal URL (already shared with students, keep it):**
+`https://script.google.com/macros/s/AKfycbwgnUluOVaruBxQijfMnxtbng0pZ0SL3cKv9aYrMTjpzjdKedUMGZl2rwBgGNHl_CQS/exec`
+
+It is reachable anonymously and answers `?health=1` with the JSON status, so *Execute as: Me /
+Access: Anyone* is already right. The health check on that same URL reported:
+
+| Field | Value today | Meaning |
+|---|---|---|
+| `embeddedHtml` | `no` | the deployed copy is **backend only** — students get a "Portal HTML missing" page |
+| `counts` | Users 0, Questions 0 | nobody has registered yet and the bank is unseeded |
+| `tabs` | 4 tabs, headers exactly as spec'd | the data model is already correct |
+| `emailQuotaLeft` | 100 recipients today | `MailApp` works from this account |
+| `spreadsheet` | `Untitled spreadsheet` | rename the sheet so the 5th (leftover) tab and the title are not confusing |
+
+So the only real step left is: **paste `cee_mock_all_in_one.gs` over the deployed code and publish
+a new version** —
+
+1. Sheet → **Extensions → Apps Script** → select all in `Code.gs` → delete → paste the whole
+   rebuilt `cee_mock_all_in_one.gs` → **Save** (the file already contains your `/exec` URL and the
+   support address in `CONFIG`).
+2. **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy.** Editing code is not
+   enough; `/exec` keeps serving the old version until you create one.
+3. Open the `/exec` URL → the login/registration screen must appear (not the missing-HTML page).
+4. `?health=1` again → `embeddedHtml: "yes (…"`, and now also `portalUrl` plus a `mail` block.
+
+Rebuilding from this repo: `node tools/build.js` (never hand-edit `cee_mock_all_in_one.gs`).
+
+---
+
 ## 1. Paste the code
 
 1. Create a Google Sheet → **Extensions → Apps Script**.
 2. Delete the default `Code.gs` tab's content, paste **the whole of `cee_mock_all_in_one.gs`**
    (one file: backend + the portal UI, base64-embedded). Save.
-3. At the top of the file, inside `var CONFIG = {`:
+3. At the top of the file, inside `var CONFIG = {` — the copy in this repo is **already set for
+   cee-notes.cprecnepal.org.np**, so on a re-paste you normally change nothing:
 
 ```js
 SHEET_ID: '',                              // optional; "" = uses the bound sheet
-ADMIN_EMAILS: ['you@yourschool.com'],      // <- change this: these emails become teachers
-EMAIL_FROM_NAME: 'CEE Mock Portal',
-EMAIL_REPLY_TO: 'support@cee-notes.cprecnepal.org.np',  // reply-to address for all outgoing mails
-WEB_APP_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',  // paste your /exec URL here
+ADMIN_EMAILS: ['support@cee-notes.cprecnepal.org.np'],  // anyone who can read this inbox can claim a teacher account
+PORTAL_URL: 'https://script.google.com/macros/s/AKfycbwgnUluOVaruBxQijfMnxtbng0pZ0SL3cKv9aYrMTjpzjdKedUMGZl2rwBgGNHl_CQS/exec',
+MAIL_FROM: 'support@cee-notes.cprecnepal.org.np',        // the "from" address; needs a verified Gmail alias (see 4.)
+MAIL_REPLY_TO: 'support@cee-notes.cprecnepal.org.np',    // replies always land here, works with no setup
+SUPPORT_EMAIL: 'support@cee-notes.cprecnepal.org.np',    // shown in every email and on the login screen
 EMAIL_ENABLED: true,
 EMAIL_FEEDBACK: true,                      // per-attempt result email to the student
 EMAIL_ADMIN_NOTIFY: true,                  // "new registration" note to teachers
@@ -49,6 +82,57 @@ Copy the `/exec` URL. That URL *is* your portal — share it (or a QR code) with
 3. Teacher dashboard → **Approvals** → Approve (the student gets an email automatically).
 4. Students log in, pick section/topic/count/time, take the mock, and get a scored result,
    a full answer review and a feedback email. Their first login binds their device.
+
+---
+
+## 4. Making the mail come *from* `support@cee-notes.cprecnepal.org.np`
+
+`MailApp` can only sign mail with an address the **account that owns the script** is allowed to
+use, so "sending through" your support address is a one-time Gmail setting, not a code setting:
+
+| Option | What you do | Result |
+|---|---|---|
+| **A. Reply-To only (zero setup — live today)** | nothing | mail leaves as the sheet owner's Gmail with `Reply-To: support@cee-notes.cprecnepal.org.np`; students hit Reply and it goes to support. The code already does this |
+| **B. Gmail alias + your host's SMTP** | Gmail → Settings → Accounts and Import → *Send mail as* → Add email address → **Send through SMTP**, then `smtp.cprecnepal.org.np:465` with the `support@cee-notes.cprecnepal.org.np` mailbox login, and confirm the token Google posts to that inbox | Apps Script may now sign as `support@cee-notes.cprecnepal.org.np`; students see the support address as the sender |
+| **C. Workspace domain** | have the admin create `support@cee-notes.cprecnepal.org.np` as a send-as alias (or run the sheet from that account) and enable SMTP forwarding | same as B, no per-user setup |
+
+The portal copes with either state: `sendMail_()` tries the alias once, and if Gmail refuses it
+retries **without** `from` (never losing a mail) and remembers that for the rest of the execution.
+Teacher → **System → Portal link & support** shows and changes both values without a re-deploy, and
+saving fires one test mail so you see the answer immediately. Confirm any time with:
+
+```
+https://script.google.com/macros/s/AKfycbwgnUluOVaruBxQijfMnxtbng0pZ0SL3cKv9aYrMTjpzjdKedUMGZl2rwBgGNHl_CQS/exec?health=1
+```
+
+→ `mail.aliasAccepted` is `"yes"` (B/C worked), `"not tried yet"`, or `"NO - You may only send
+from your address or alias: ..."` (still on option A). `portalUrl` is the link students get in
+their emails; leave it empty and they get no link (admins always get one).
+
+---
+
+## 5. This repo is the GitHub Pages door, not the app
+
+`cee-notes.github.io/portal/` serves the **root `index.html`** of this repo, and that file is a
+landing page: your logo, the CPREC + Facebook links, a big *Open the portal* button and a
+3-second auto-redirect to the Apps Script `/exec` URL. It contains no app code on purpose —
+Pages is a static host, so `google.script.run` does not exist there and a published copy of the
+portal UI can only render a dead login form.
+
+Layout of this repo (the split form of `tools/paths.js`; the code repo keeps the flat form):
+
+| Path | What it is |
+|---|---|
+| `index.html` | the Pages door — this is what students land on |
+| `src/Code.gs`, `src/index.html` | the real portal: Apps Script backend + portal UI |
+| `dist/cee_mock_all_in_one.gs` | **paste this into Apps Script** — the generated single file (backend + UI base64-embedded) |
+| `tools/` | build + 91 acceptance checks; `bash tools/run.sh` works in this layout unchanged |
+
+Never paste this repo's old root-level `Code.gs` / `cee_mock_all_in_one.gs` (they are gone now) or
+anything except `dist/cee_mock_all_in_one.gs`: an artifact built before the UI was embedded is what
+made the live deployment answer *"Portal HTML missing"*.
+
+To disable the auto-jump, delete the `AUTO_REDIRECT` block at the bottom of `index.html`.
 
 ---
 
@@ -115,6 +199,9 @@ the current bank back in the same shape, so Excel/LibreOffice is a fine editor.
 | "Your account is pending teacher approval" | Approvals tab → Approve |
 | Session expired after a day | by design — `SESSION_HOURS: 24` |
 | Emails missing | `MailApp` quota hit (see table) or `EMAIL_*` toggle off; the portal never fails because of mail |
+| Mail arrives from the sheet owner, not `support@cee-notes.cprecnepal.org.np` | the alias is not verified in Gmail (option B/C above) — Reply-To still routes replies to support, and the Health check says `aliasAccepted: "NO - ..."` |
+| Page shows "Portal HTML missing" | the deployed file is `Code.gs` only; paste the generated **`cee_mock_all_in_one.gs`** and publish a new version |
+| Students get no link in the approval email | `CONFIG.PORTAL_URL` empty and nothing saved in Teacher → System → Portal link |
 | Result page shows fewer/odd items | a teacher edited the Questions tab *during* that attempt; the edit is honoured and the rest is graded from the bank |
 | Blank page in a browser | open the browser console — `window.__cee` is exposed for debugging; `?health=1` on the `/exec` URL returns a JSON status if you ever need it |
 
@@ -130,7 +217,7 @@ To rebuild the single file after editing the UI:
 
 ```bash
 node tools/build.js      # writes cee_mock_all_in_one.gs
-bash tools/run.sh        # syntax + build + 82 acceptance checks
+bash tools/run.sh        # syntax + build + 91 acceptance checks
 ```
 
 Optional, if you prefer `clasp` to push code instead of pasting: `clasp push` works with the
