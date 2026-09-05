@@ -1,0 +1,17 @@
+# test-rig dependencies only (the portal itself needs nothing)
+node_modules/
+package-lock.json
+
+# never commit live data exports (student emails + password hashes live in the sheet)
+exports/
+backup/
+data/
+*.bak
+Users.csv
+Attempts.csv
+Responses.csv
+
+# generated scratch
+tmp/
+.DS_Store
+*.log

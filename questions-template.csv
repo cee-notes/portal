@@ -1,0 +1,7 @@
+section,topic,question,A,B,C,D,answer,explanation,image
+Bio,Z1,"Which organelle is the site of ATP synthesis?","Ribosome","Mitochondria","Golgi body","Lysosome",B,"Mitochondria carry out oxidative phosphorylation and export ATP.",
+Bio,Z5,"A cross Tt x Tt gives a phenotypic ratio of which of these?","1:2:1","3:1","1:1","9:3:3:1",B,"Monohybrid F2 phenotype is 3 tall : 1 short; 1:2:1 is the GENOTYPIC ratio.",
+Chem,C1,"Number of moles in 8 g of O2 (M = 32 g/mol)?","0.125","0.25","0.5","2",B,"n = given mass / molar mass = 8 / 32 = 0.25 mol.",
+Phy,P1,"The dimensional formula of force is:","[M L T-2]","[M L2 T-3]","[M L-1 T-2]","[M L T-1]",A,"F = m a = kg m s-2, so [M L T-2].",
+Phy,P1,"The figure shows two forces at right angles. What is the resultant?","1 N","5 N","7 N","12 N",B,"R = sqrt(3^2 + 4^2) = 5 N. Put an image URL or data: URI in the last column for figure questions.",https://example.com/figures/vectors.png
+Math,M4,"The sum of the first 20 terms of the A.P. 3, 7, 11, ... is:","820","760","800","840",A,"S = n/2[2a+(n-1)d] = 10[6+19(4)] = 820.",

@@ -1,0 +1,13 @@
+{
+  "name": "cee-mock-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CEE Mock Portal - Apps Script + Google Sheets. The deployable artefact is cee_mock_all_in_one.gs; this package only holds the build/test rig.",
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "bash tools/run.sh"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
