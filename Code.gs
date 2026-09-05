@@ -140,6 +140,11 @@ function getPortalHtml_() {
   return html;
 }
 
+// ==================== EMBEDDED_HTML ====================
+// This will be populated by the build script with base64-encoded index.html
+var EMBEDDED_HTML = '';
+// =======================================================
+
 /* ==================================================================
  * LOW LEVEL SHEET HELPERS
  * ================================================================== */
