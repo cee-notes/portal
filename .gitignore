@@ -1,1 +1,15 @@
-Nothing should be ignored based on the provided file changes, as they consist only of source/config files (.html, .gs) without any build artifacts, dependencies, or temporary files.
+# test rig dependencies - the app itself has none
+node_modules
+package-lock.json
+
+# generated scratch
+*.log
+tmp/
+.tmp/
+exports/
+backups/
+.DS_Store
+
+# local secrets, if you ever script the deploy with clasp
+.env
+.clasp.json
